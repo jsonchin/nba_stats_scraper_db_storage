@@ -7,11 +7,11 @@ to prevent double scraping.
 import sqlite3
 import db_storage.db_config as DB_CONFIG
 
-def init_db(db_name: str):
+def init_db():
     """
     Creates a database with the given name and creates
     the "scrape_log" table.
     """
-    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, db_name))
+    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
     con.execute("""CREATE TABLE IF NOT EXISTS scrape_log (date text, api_request text);""")
     con.close()
