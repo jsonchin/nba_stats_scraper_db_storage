@@ -12,3 +12,6 @@ def execute_many_sql(sql, seq_of_params):
     cur = con.executemany(sql, seq_of_params)
     con.commit()
     return cur.fetchall()
+
+def close_con():
+    con.close()
