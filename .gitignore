@@ -111,3 +111,4 @@ cmake-build-debug/
 *.iws
 
 *.db
+db_storage/databases/*
