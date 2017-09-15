@@ -5,7 +5,18 @@ Handles the creation of tables and storage into tables.
 from typing import List
 from scraper.nba_response import NBA_response
 
-def create_table(l_nba_response: List[NBA_response], primary_keys=()):
+
+def store_nba_responses(data_name, l_nba_response: List[NBA_response], primary_keys=()):
+    """
+    Stores a given list of nba responses, creating a table
+    if necessary with the given data_name.
+    """
+    if exists_table(data_name):
+        add_to_table(data_name, l_nba_response)
+    else:
+        create_table_from_responses(l_nba_response, primary_keys)
+
+def create_table_from_responses(l_nba_response: List[NBA_response], primary_keys=()):
     """
     Creates a table with column names and rows corresponding
     to the provided json responses.
