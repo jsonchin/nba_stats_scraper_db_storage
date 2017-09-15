@@ -99,3 +99,13 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+# pycharm/idea:
+.idea/*
+
+# CMake
+cmake-build-debug/
+
+## File-based project format:
+*.iws
