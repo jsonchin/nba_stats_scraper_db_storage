@@ -21,6 +21,7 @@ def scrape_player_ids():
 
     # TODO store into db
 
+
 def scrape_game_dates():
     """
     Scrapes and stores game_dates.
