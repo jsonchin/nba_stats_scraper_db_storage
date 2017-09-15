@@ -13,9 +13,7 @@ def scrape(api_request):
         SLEEP_TIME = 2 # in seconds
         while try_count > 0:
             try:
-                print('here')
                 response = requests.get(url=api_request, headers={'User-agent': 'not-a-bot'})
-                print('request made')
                 return response
             except:
                 time.sleep(SLEEP_TIME)
