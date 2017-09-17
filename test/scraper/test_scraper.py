@@ -4,7 +4,7 @@ db_config.DB_NAME = 'test_db'
 db_config.DB_PATH = 'test/db_storage/databases'
 
 
-class TestScraper(unittest.BaseTestSuite):
+class TestScraper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
