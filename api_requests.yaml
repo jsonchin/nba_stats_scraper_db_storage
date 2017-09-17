@@ -1,14 +1,14 @@
-- DATA_NAME: 'player_ids'
-  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={season}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
+- DATA_NAME: 'games'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=1000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=T&Season={season}&SeasonType=Regular+Season&Sorter=DATE'
   PRIMARY_KEYS:
-    - 'PLAYER_ID'
-    - 'PLAYER_NAME'
-  DAILY_SCRAPE: False
+    - 'TEAM_ID'
+    - 'GAME_DATE'
+  DAILY_SCRAPE: True
 
 
-- DATA_NAME: 'player_ids'
-  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={season}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
+- DATA_NAME: 'player_logs'
+  API_ENDPOINT: 'http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID={player_id}&Season={season}&SeasonType=Regular+Season'
   PRIMARY_KEYS:
     - 'PLAYER_ID'
-    - 'PLAYER_NAME'
-  DAILY_SCRAPE: False
+    - 'GAME_DATE'
+  DAILY_SCRAPE: True
