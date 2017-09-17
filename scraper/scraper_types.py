@@ -9,6 +9,7 @@ import scraper.scraper_config as SCRAPER_CONFIG
 from scraper import scraper_utils
 from db_storage import db_retrieval
 from db_storage import db_storage
+from scraper import request_logger
 import itertools
 from collections import OrderedDict
 
@@ -33,6 +34,7 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
     - player_id
     - team_id
     """
+
     fillables = []
     fillable_types = []
     if '{season}' in fillable_api_request:
@@ -57,6 +59,7 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
             print(api_request)
 
         nba_response = scraper_utils.scrape(api_request)
+        request_logger.log_request(api_request)
         if 'season' in fillable_types:
             nba_response.add_season_col(d['season'])
         db_storage.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
