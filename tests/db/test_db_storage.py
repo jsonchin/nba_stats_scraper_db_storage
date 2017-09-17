@@ -1,10 +1,10 @@
 import unittest
-from db_storage import db_config
-db_config.DB_NAME = 'test_db'
-db_config.DB_PATH = 'test/db_storage/databases'
+from db import config
+config.DB_NAME = 'test_db'
+config.DB_PATH = 'test/db_storage/databases'
 
-from db_storage import db_init
-from db_storage import db_storage
+import db.initialize
+import db.store
 
 
 class TestDBStorage(unittest.TestCase):
@@ -25,9 +25,9 @@ class TestDBStorage(unittest.TestCase):
         """
         Tests if init_db creates a table called 'scrape_log'.
         """
-        db_init.init_db()
-        self.assertTrue(db_storage.exists_table('scrape_log'), 'Table \'scrape_log\' should exist.')
+        db.initialize.init_db()
+        self.assertTrue(db.store.exists_table('scrape_log'), 'Table \'scrape_log\' should exist.')
 
     def test_exists_db(self):
-        self.assertFalse(db_storage.exists_table('TABLE_NAME_THAT_DOES_NOT_EXIST'),
+        self.assertFalse(db.store.exists_table('TABLE_NAME_THAT_DOES_NOT_EXIST'),
                          'Table should not exist.')

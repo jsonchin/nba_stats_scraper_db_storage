@@ -1,7 +1,7 @@
 """
 Provides utility functions for scraping.
 """
-from scraper.nba_response import NBA_response
+from scrape.nba_response import NBA_response
 import requests
 import time
 

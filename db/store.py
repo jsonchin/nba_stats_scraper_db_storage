@@ -3,9 +3,9 @@ Handles the creation of tables and storage into tables.
 """
 
 from typing import List
-from scraper.nba_response import NBA_response
-from db_storage import db_utils
-import db_storage.db_config as DB_CONFIG
+from scrape.nba_response import NBA_response
+from db import utils
+import db.config as DB_CONFIG
 
 def store_nba_response(data_name: str, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
@@ -93,7 +93,7 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
         return column_def_str
 
     column_sql_str = format_column_strs()
-    db_utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(table_name, column_sql_str))
+    utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(table_name, column_sql_str))
 
     add_to_table(table_name, headers, rows)
 
@@ -105,7 +105,7 @@ def exists_table(table_name: str):
     """
     try:
         # if this errors, then there was not a table with this name
-        db_utils.execute_sql("""SELECT * FROM {} LIMIT 1;""".format(table_name))
+        utils.execute_sql("""SELECT * FROM {} LIMIT 1;""".format(table_name))
         return True
     except:
         return False
@@ -120,4 +120,4 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     else:
         sql_statement = """INSERT INTO {} VALUES {};"""
 
-    db_utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
+    utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)

@@ -5,11 +5,11 @@ Ex. Scrape all ___ for each season
 Ex. Scrape all ___ for each season for each position
 Ex. Scrape all ___ for each season for each player_id
 """
-import scraper.scraper_config as SCRAPER_CONFIG
-from scraper import scraper_utils
-from db_storage import db_retrieval
-from db_storage import db_storage
-from scraper import request_logger
+import scrape.config as SCRAPER_CONFIG
+from scrape import utils
+import db.retrieve
+import db.store
+from scrape import request_logger
 import itertools
 from collections import OrderedDict
 
@@ -54,7 +54,7 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
     fillable_types = []
 
     if '{season}' in fillable_api_request and '{player_id}' in fillable_api_request:
-        player_ids_by_season = db_retrieval.fetch_player_ids()
+        player_ids_by_season = db.retrieve.fetch_player_ids()
         fillable_types.append('season')
         fillable_types.append('player_id')
 
@@ -71,7 +71,7 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
         primary_keys.append('SEASON')
 
     elif '{player_id}' in fillable_api_request:
-        player_ids_by_season = db_retrieval.fetch_player_ids()
+        player_ids_by_season = db.retrieve.fetch_player_ids()
         fillable_types.append('player_id')
 
         # find what the season is in the api request
@@ -96,11 +96,11 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
             print('Scraping: {}'.format(d))
             print(api_request)
 
-        nba_response = scraper_utils.scrape(api_request)
+        nba_response = utils.scrape(api_request)
         request_logger.log_request(api_request)
         if 'season' in fillable_types:
             nba_response.add_season_col(d['season'])
-        db_storage.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
+        db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
 
 
