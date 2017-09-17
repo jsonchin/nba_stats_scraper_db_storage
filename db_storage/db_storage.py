@@ -6,6 +6,9 @@ from typing import List
 from scraper.nba_response import NBA_response
 from db_storage import db_utils
 
+def store_nba_response(data_name, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
+    store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
+
 def store_nba_responses(data_name, l_nba_response: List[NBA_response], primary_keys=(), ignore_keys=set()):
     """
     Stores a given list of nba responses, creating a table
@@ -43,7 +46,7 @@ def store_nba_responses(data_name, l_nba_response: List[NBA_response], primary_k
 
 
     if exists_table(data_name):
-        add_to_table(data_name, processed_rows)
+        add_to_table(data_name, desired_column_headers, processed_rows)
     else:
         create_table_with_data(data_name, desired_column_headers, processed_rows, primary_keys)
 
@@ -70,29 +73,26 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
 
     def format_column_strs():
         """
-        Returns a list of formatted column strings that include:
+        Returns the string representing the declaration of columns
+         in a sqlite3 table declaration which includes.
         - column name
         - column type (sqlite3)
-        - primary key (if it is one)
+        - primary key
 
-        Ex. ['PLAYER_ID INT PRIMARY KEY', 'PLAYER_NAME TEXT PRIMARY KEY']
+        Ex. 'PLAYER_ID INT, PLAYER_NAME TEXT, PRIMARY KEY (PLAYER_ID, PLAYER_NAME)'
         """
         column_types = get_column_types(rows)
         column_strs = []
         for i in range(len(headers)):
             column_str = '{} {}'.format(headers[i], column_types[i])
-            if headers[i] in primary_keys:
-                column_str += ' PRIMARY KEY'
             column_strs.append(column_str)
-        return column_strs
+        column_def_str = ', '.join(column_strs)
+        if len(primary_keys) != 0:
+            column_def_str += ', PRIMARY KEY ({})'.format(', '.join(primary_keys))
+        return column_def_str
 
-    column_strs = format_column_strs()
-    column_sql_str = ', '.join(column_strs)
-
-    primary_key_sql_str = ', '.join(primary_keys)
-
-    db_utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(
-        table_name, column_sql_str, primary_key_sql_str))
+    column_sql_str = format_column_strs()
+    db_utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(table_name, column_sql_str))
 
     add_to_table(table_name, headers, rows)
 
@@ -105,9 +105,9 @@ def exists_table(table_name: str):
     try:
         # if this errors, then there was not a table with this name
         db_utils.execute_sql("""SELECT * FROM {} LIMIT 1;""".format(table_name))
-        return False
-    except:
         return True
+    except:
+        return False
 
 def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     """

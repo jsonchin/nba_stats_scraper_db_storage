@@ -1,5 +1,9 @@
 START_YEAR = 2015
 END_YEAR = 2017
+VERBOSE = True
+
+
+
 
 def _get_seasons():
     """
