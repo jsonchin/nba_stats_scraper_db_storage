@@ -32,8 +32,11 @@ class NBAResponse():
 
     def __init__(self, json_response: Dict):
         # corresponding to how NBA json responses are formatted
-        self._headers = NBAResponse.headers_access(json_response)
-        self._rows = NBAResponse.row_set_access(json_response)
+        try:
+            self._headers = NBAResponse.headers_access(json_response)
+            self._rows = NBAResponse.row_set_access(json_response)
+        except ValueError:
+            raise ValueError('Unexpected JSON formatting of headers and rows.')
 
     @property
     def headers(self):
@@ -144,27 +147,29 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
 
 
 def scrape(api_request):
+    """
+    Tries to make an api_request to stats.nba.com multiple times and
+    returns a NBAResponse object containing rows and headers.
+    """
 
     def scrape_json(api_request):
-        try_count = 5
-        SLEEP_TIME = 2 # in seconds
-        while try_count > 0:
-            try:
-                response = requests.get(url=api_request, headers={'User-agent': 'not-a-bot'})
-                return response
-            except:
-                time.sleep(SLEEP_TIME)
-                print('Sleeping on {} for {} seconds.'.format(api_request, SLEEP_TIME))
-            try_count -= 1
-        raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
+        """
+        Makes an api_request.
+        """
+        response = requests.get(url=api_request, headers={'User-agent': 'not-a-bot'})
+        return response.json()
 
-    response = scrape_json(api_request)
-    response_json = response.json()
+    try_count = SCRAPER_CONFIG.TRY_COUNT
+    while try_count > 0:
+        try:
+            response_json = scrape_json(api_request)
+            return NBAResponse(response_json)
+        except:
+            time.sleep(SCRAPER_CONFIG.SLEEP_TIME)
+            print('Sleeping on {} for {} seconds.'.format(api_request, SLEEP_TIME))
+        try_count -= 1
+    raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
 
-    try:
-        return NBAResponse(response_json)
-    except:
-        raise ValueError('Unexpected JSON formatting of headers and rows.')
 
 def flatten_list(l):
     """
