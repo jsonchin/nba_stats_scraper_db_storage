@@ -3,7 +3,7 @@ Handles the creation of tables and storage into tables.
 """
 
 from typing import List
-from scraper.nba_response import NBA_response
+from scrape.nba_response import NBA_response
 from db import db_utils
 import db.db_config as DB_CONFIG
 

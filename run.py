@@ -1,6 +1,6 @@
 from db import db_init
-from scraper import scraper_init
-from scraper import scraper_types
+from scrape import scraper_init
+from scrape import scraper_types
 from db import db_utils
 from db import db_retrieval
 

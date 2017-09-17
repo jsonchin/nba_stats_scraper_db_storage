@@ -3,8 +3,8 @@ from db import db_config
 db_config.DB_NAME = 'test_db'
 db_config.DB_PATH = 'test/db_storage/databases'
 
-from scraper import request_logger
-from scraper import scraper_init
+from scrape import request_logger
+from scrape import scraper_init
 
 class TestScraper(unittest.TestCase):
 

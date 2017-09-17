@@ -5,11 +5,11 @@ Ex. Scrape all ___ for each season
 Ex. Scrape all ___ for each season for each position
 Ex. Scrape all ___ for each season for each player_id
 """
-import scraper.scraper_config as SCRAPER_CONFIG
-from scraper import scraper_utils
+import scrape.scraper_config as SCRAPER_CONFIG
+from scrape import scraper_utils
 from db import db_retrieval
 from db import db_storage
-from scraper import request_logger
+from scrape import request_logger
 import itertools
 from collections import OrderedDict
 
