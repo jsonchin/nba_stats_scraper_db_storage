@@ -3,7 +3,7 @@ Handles the creation of tables and storage into tables.
 """
 
 from typing import List
-from db import utils
+import db.retrieve
 import db.config as DB_CONFIG
 
 def store_nba_response(data_name: str, nba_response, primary_keys=(), ignore_keys=set()):
@@ -45,7 +45,7 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
         processed_rows.extend(filter_columns(nba_response, desired_column_headers))
 
 
-    if exists_table(data_name):
+    if db.retrieve.exists_table(data_name):
         add_to_table(data_name, desired_column_headers, processed_rows)
     else:
         create_table_with_data(data_name, desired_column_headers, processed_rows, primary_keys)
@@ -96,18 +96,6 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
 
     add_to_table(table_name, headers, rows)
 
-
-
-def exists_table(table_name: str):
-    """
-    Returns True if there already exists a table with this name.
-    """
-    try:
-        # if this errors, then there was not a table with this name
-        utils.execute_sql("""SELECT * FROM {} LIMIT 1;""".format(table_name))
-        return True
-    except:
-        return False
 
 def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     """

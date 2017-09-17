@@ -27,3 +27,14 @@ def db_query(sql_query: str):
     Returns a pandas dataframe corresponding to the result of
     executing the sql_query.
     """
+
+def exists_table(table_name: str):
+    """
+    Returns True if there already exists a table with this name.
+    """
+    try:
+        # if this errors, then there was not a table with this name
+        db.utils.execute_sql("""SELECT * FROM {} LIMIT 1;""".format(table_name))
+        return True
+    except:
+        return False
