@@ -5,6 +5,7 @@ Handles the creation of tables and storage into tables.
 from typing import List
 from scraper.nba_response import NBA_response
 from db_storage import db_utils
+import db_storage.db_config as DB_CONFIG
 
 def store_nba_response(data_name, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
@@ -114,4 +115,9 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     Adds the rows to the table.
     """
     insert_values_sql_str = '({})'.format(', '.join(['?'] * len(headers)))
-    db_utils.execute_many_sql("""INSERT INTO {} VALUES {};""".format(table_name, insert_values_sql_str), rows)
+    if DB_CONFIG.IGNORE_DUPLICATES:
+        sql_statement = """INSERT OR IGNORE INTO {} VALUES {};"""
+    else:
+        sql_statement = """INSERT INTO {} VALUES {};"""
+
+    db_utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
