@@ -3,9 +3,7 @@ from db import config
 config.DB_NAME = 'test_db'
 config.DB_PATH = 'test/db_storage/databases'
 
-from db import initialize
-from db import store
-from db import retrieve
+import db.retrieve
 
 from collections import defaultdict
 
@@ -24,7 +22,7 @@ class TestDBStorage(unittest.TestCase):
         pass
 
     def test_fetch_player_ids(self):
-        d = retrieve.fetch_player_ids()
+        d = db.retrieve.fetch_player_ids()
         self.assertTrue(type(d) == dict or type(d) == defaultdict,
                         'Expected a dictionary got {}'.format(type(d)))
 

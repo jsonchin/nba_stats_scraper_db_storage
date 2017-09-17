@@ -3,8 +3,8 @@ from db import config
 config.DB_NAME = 'test_db'
 config.DB_PATH = 'test/db_storage/databases'
 
-from db import initialize
-from db import store
+import db.initialize
+import db.store
 
 
 class TestDBStorage(unittest.TestCase):
@@ -25,9 +25,9 @@ class TestDBStorage(unittest.TestCase):
         """
         Tests if init_db creates a table called 'scrape_log'.
         """
-        initialize.init_db()
-        self.assertTrue(store.exists_table('scrape_log'), 'Table \'scrape_log\' should exist.')
+        db.initialize.init_db()
+        self.assertTrue(db.store.exists_table('scrape_log'), 'Table \'scrape_log\' should exist.')
 
     def test_exists_db(self):
-        self.assertFalse(store.exists_table('TABLE_NAME_THAT_DOES_NOT_EXIST'),
+        self.assertFalse(db.store.exists_table('TABLE_NAME_THAT_DOES_NOT_EXIST'),
                          'Table should not exist.')
