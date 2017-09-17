@@ -7,10 +7,10 @@ from scraper.nba_response import NBA_response
 from db_storage import db_utils
 import db_storage.db_config as DB_CONFIG
 
-def store_nba_response(data_name, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
+def store_nba_response(data_name: str, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
 
-def store_nba_responses(data_name, l_nba_response: List[NBA_response], primary_keys=(), ignore_keys=set()):
+def store_nba_responses(data_name: str, l_nba_response: List[NBA_response], primary_keys=(), ignore_keys=set()):
     """
     Stores a given list of nba responses, creating a table
     if necessary with the given data_name.
