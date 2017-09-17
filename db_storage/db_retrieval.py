@@ -6,12 +6,14 @@ for querying with standard SQL.
 The general query function will return a pandas dataframe.
 """
 
+from db_storage import db_utils
 import pandas as pd
 
 def fetch_player_ids():
     """
     Returns a list of player_ids.
     """
+    return [row[0] for row in db_utils.execute_sql("""SELECT PLAYER_ID FROM player_ids;""")]
 
 def db_query(sql_query: str):
     """

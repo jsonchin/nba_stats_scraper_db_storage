@@ -1,5 +1,9 @@
 START_YEAR = 2015
 END_YEAR = 2017
+VERBOSE = True
+
+
+
 
 def _get_seasons():
     """
@@ -10,7 +14,7 @@ def _get_seasons():
     end_year = END_YEAR
 
     seasons = []
-    while start_year != end_year - 1:
+    while start_year != end_year:
         seasons.append('{}-{}'.format(start_year, (start_year + 1) % 100))
         start_year += 1
     return seasons
