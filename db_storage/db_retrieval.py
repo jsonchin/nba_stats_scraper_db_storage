@@ -7,13 +7,20 @@ The general query function will return a pandas dataframe.
 """
 
 from db_storage import db_utils
+from collections import defaultdict
 import pandas as pd
 
 def fetch_player_ids():
     """
     Returns a list of player_ids.
     """
-    return [row[0] for row in db_utils.execute_sql("""SELECT PLAYER_ID FROM player_ids;""")]
+    player_ids_by_season = defaultdict(list)
+    season_player_id_tuples = db_utils.execute_sql("""SELECT SEASON, PLAYER_ID FROM player_ids;""")
+
+    for season, player_id in season_player_id_tuples:
+        player_ids_by_season[season].append(player_id)
+
+    return player_ids_by_season
 
 def db_query(sql_query: str):
     """

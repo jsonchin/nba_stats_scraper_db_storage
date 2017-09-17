@@ -13,9 +13,22 @@ from scraper import request_logger
 import itertools
 from collections import OrderedDict
 
-from typing import List, Set
+from typing import List
 
-def general_scraper(fillable_api_request: str, data_name: str, primary_keys: List[str], ignore_keys: Set):
+
+def flatten_list(l):
+    """
+    Flattens a list one level.
+    """
+    flattened_l = []
+    for ele in l:
+        if type(ele) == list or type(ele) == tuple:
+            flattened_l.extend(ele)
+        else:
+            flattened_l.append(ele)
+    return flattened_l
+
+def general_scraper(fillable_api_request: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -34,22 +47,47 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
     - player_id
     - team_id
     """
+    SEASON_KEYWORD = '&Season='
+    SEASON_LENGTH = len('2017-18')
 
     fillables = []
     fillable_types = []
-    if '{season}' in fillable_api_request:
-        fillables.append(SCRAPER_CONFIG.SEASONS)
+
+    if '{season}' in fillable_api_request and '{player_id}' in fillable_api_request:
+        player_ids_by_season = db_retrieval.fetch_player_ids()
         fillable_types.append('season')
+        fillable_types.append('player_id')
+
+        paired_season_player_id = []
+        for season in player_ids_by_season:
+            player_ids = player_ids_by_season[season]
+            for player_id in player_ids:
+                paired_season_player_id.append((season, player_id))
+        fillables.append(paired_season_player_id)
+
+    elif '{season}' in fillable_api_request:
+        fillable_types.append('season')
+        fillables.append(SCRAPER_CONFIG.SEASONS)
         primary_keys.append('SEASON')
 
-    if '{player_id}' in fillable_api_request:
-        fillables.append(db_retrieval.fetch_player_ids())
+    elif '{player_id}' in fillable_api_request:
+        player_ids_by_season = db_retrieval.fetch_player_ids()
         fillable_types.append('player_id')
+
+        # find what the season is in the api request
+        try:
+            i = fillable_api_request.index(SEASON_KEYWORD)
+            season_start_i = i + len(SEASON_KEYWORD)
+            season = fillable_api_request[season_start_i: season_start_i + SEASON_LENGTH]
+            fillables.append(player_ids_by_season[season])
+        except ValueError:
+            raise ValueError('API request had {player_id} without a specified season or {season}.')
 
 
     for fillable_permutation in itertools.product(*fillables):
         d = OrderedDict()
-        for fillable_type, fillable_value in zip(fillable_types, fillable_permutation):
+
+        for fillable_type, fillable_value in zip(fillable_types, flatten_list(fillable_permutation)):
             d[fillable_type] = fillable_value
 
         api_request = fillable_api_request.format(**d)
