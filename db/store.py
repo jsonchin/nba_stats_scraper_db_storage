@@ -4,6 +4,7 @@ Handles the creation of tables and storage into tables.
 
 from typing import List
 import db.retrieve
+import db.utils
 import db.config as DB_CONFIG
 
 def store_nba_response(data_name: str, nba_response, primary_keys=(), ignore_keys=set()):
@@ -92,7 +93,7 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
         return column_def_str
 
     column_sql_str = format_column_strs()
-    utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(table_name, column_sql_str))
+    db.utils.execute_sql("""CREATE TABLE IF NOT EXISTS {} ({});""".format(table_name, column_sql_str))
 
     add_to_table(table_name, headers, rows)
 
@@ -107,4 +108,4 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     else:
         sql_statement = """INSERT INTO {} VALUES {};"""
 
-    utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
+    db.utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)

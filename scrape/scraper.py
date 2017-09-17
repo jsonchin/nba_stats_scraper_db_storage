@@ -54,6 +54,84 @@ class NBAResponse():
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
+class FillableAPIRequest():
+    """
+    Represents a fillable api request.
+    """
+    fillable_values = {}
+    SEASON_KEYWORD = '&Season='
+    SEASON_LENGTH = len('2017-18')
+
+    def __init__(self, fillable_api_request: str, primary_keys: List[str]):
+        """
+        Given a fillable_api_request, parses the fillable choices
+        and adds any primary keys if necesssary.
+        """
+        self.fillable_api_request = fillable_api_request
+        self._fillable_choices = []
+        self._fillable_names = []
+        self._parse_fillable_api_request(primary_keys)
+
+    def generate_cross_product_choices(self):
+        for fillable_permutation in itertools.product(*self._fillable_choices):
+            d = OrderedDict()
+            for fillable_type, fillable_value in zip(self._fillable_names, flatten_list(fillable_permutation)):
+                d[fillable_type] = fillable_value
+            yield d
+
+    def format(self, **kwargs):
+        return self.fillable_api_request.format(**kwargs)
+
+    def _parse_fillable_api_request(self, primary_keys: List[str]):
+        if '{season}' in self.fillable_api_request and '{player_id}' in self.fillable_api_request:
+            player_ids_by_season = self._get_fillable_values('{player_id}')
+            self._fillable_names.append('season')
+            self._fillable_names.append('player_id')
+
+            paired_season_player_id = []
+            for season in player_ids_by_season:
+                player_ids = player_ids_by_season[season]
+                for player_id in player_ids:
+                    paired_season_player_id.append((season, player_id))
+            self._fillable_choices.append(paired_season_player_id)
+
+        elif '{season}' in self.fillable_api_request:
+            self._fillable_names.append('season')
+            self._fillable_choices.append(self._get_fillable_values('{season}'))
+            primary_keys.append('SEASON')
+
+        elif '{player_id}' in self.fillable_api_request:
+            player_ids_by_season = self._get_fillable_values('{player_id}')
+            self._fillable_names.append('player_id')
+
+            # find what the season is in the api request
+            try:
+                i = self.fillable_api_request.index(FillableAPIRequest.SEASON_KEYWORD)
+                season_start_i = i + len(FillableAPIRequest.SEASON_KEYWORD)
+                season = self.fillable_api_request[season_start_i: season_start_i + FillableAPIRequest.SEASON_LENGTH]
+                self._fillable_choices.append(player_ids_by_season[season])
+            except ValueError:
+                raise ValueError('API request had {player_id} without a specified season or {season}.')
+
+    def __str__(self):
+        return 'API Request: {}\n\t with fillable values: {}'.format(self.fillable_api_request, self._fillable_names)
+
+
+    def _get_fillable_values(self, fillable_type):
+        if fillable_type not in FillableAPIRequest.fillable_values:
+            if fillable_type == '{season}':
+                values = SCRAPER_CONFIG.SEASONS
+            elif fillable_type == '{player_id}':
+                values = db.retrieve.fetch_player_ids()
+            else:
+                raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
+            FillableAPIRequest.fillable_values[fillable_type] = values
+            return values
+        else:
+            return FillableAPIRequest.fillable_values[fillable_type]
+
+
+
 
 def run_scrape(path_to_api_requests: str):
     """
@@ -70,7 +148,7 @@ def run_scrape(path_to_api_requests: str):
                                     api_request['PRIMARY_KEYS'],
                                     ignore_keys)
 
-def general_scraper(fillable_api_request: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
+def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -89,59 +167,20 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
     - player_id
     - team_id
     """
-    SEASON_KEYWORD = '&Season='
-    SEASON_LENGTH = len('2017-18')
+    fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
+    print(fillable_api_request)
 
-    fillables = []
-    fillable_types = []
-
-    if '{season}' in fillable_api_request and '{player_id}' in fillable_api_request:
-        player_ids_by_season = db.retrieve.fetch_player_ids()
-        fillable_types.append('season')
-        fillable_types.append('player_id')
-
-        paired_season_player_id = []
-        for season in player_ids_by_season:
-            player_ids = player_ids_by_season[season]
-            for player_id in player_ids:
-                paired_season_player_id.append((season, player_id))
-        fillables.append(paired_season_player_id)
-
-    elif '{season}' in fillable_api_request:
-        fillable_types.append('season')
-        fillables.append(SCRAPER_CONFIG.SEASONS)
-        primary_keys.append('SEASON')
-
-    elif '{player_id}' in fillable_api_request:
-        player_ids_by_season = db.retrieve.fetch_player_ids()
-        fillable_types.append('player_id')
-
-        # find what the season is in the api request
-        try:
-            i = fillable_api_request.index(SEASON_KEYWORD)
-            season_start_i = i + len(SEASON_KEYWORD)
-            season = fillable_api_request[season_start_i: season_start_i + SEASON_LENGTH]
-            fillables.append(player_ids_by_season[season])
-        except ValueError:
-            raise ValueError('API request had {player_id} without a specified season or {season}.')
-
-
-    for fillable_permutation in itertools.product(*fillables):
-        d = OrderedDict()
-
-        for fillable_type, fillable_value in zip(fillable_types, flatten_list(fillable_permutation)):
-            d[fillable_type] = fillable_value
-
-        api_request = fillable_api_request.format(**d)
+    for fillable_choice in fillable_api_request.generate_cross_product_choices():
+        api_request = fillable_api_request.format(**fillable_choice)
 
         if SCRAPER_CONFIG.VERBOSE:
-            print('Scraping: {}'.format(d))
+            print('Scraping: {}'.format(fillable_choice))
             print(api_request)
 
         nba_response = scrape(api_request)
         db.request_logger.log_request(api_request)
-        if 'season' in fillable_types:
-            nba_response.add_season_col(d['season'])
+        if 'season' in fillable_choice:
+            nba_response.add_season_col(fillable_choice['season'])
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
 
@@ -165,7 +204,7 @@ def scrape(api_request):
             return NBAResponse(response_json)
         except:
             time.sleep(SCRAPER_CONFIG.SLEEP_TIME)
-            print('Sleeping on {} for {} seconds.'.format(api_request, SLEEP_TIME))
+            print('Sleeping on {} for {} seconds.'.format(api_request, SCRAPER_CONFIG.SLEEP_TIME))
         try_count -= 1
     raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
 
@@ -181,4 +220,3 @@ def flatten_list(l):
         else:
             flattened_l.append(ele)
     return flattened_l
-
