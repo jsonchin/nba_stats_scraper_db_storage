@@ -22,5 +22,10 @@ class NBA_response():
     def rows(self):
         return self._rows
 
+    def add_season_col(self, season):
+        self._headers.append('SEASON')
+        for row in self.rows:
+            row.append(season)
+
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)

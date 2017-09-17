@@ -12,9 +12,9 @@ from db_storage import db_storage
 import itertools
 from collections import OrderedDict
 
-from typing import List
+from typing import List, Set
 
-def general_scraper(fillable_api_request: str, data_name: str, primary_keys: List[str]):
+def general_scraper(fillable_api_request: str, data_name: str, primary_keys: List[str], ignore_keys: Set):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -38,6 +38,7 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
     if '{season}' in fillable_api_request:
         fillables.append(SCRAPER_CONFIG.SEASONS)
         fillable_types.append('season')
+        primary_keys.append('SEASON')
 
     if '{player_id}' in fillable_api_request:
         fillables.append(db_retrieval.fetch_player_ids())
@@ -56,6 +57,9 @@ def general_scraper(fillable_api_request: str, data_name: str, primary_keys: Lis
             print(api_request)
 
         nba_response = scraper_utils.scrape(api_request)
-        db_storage.store_nba_response(data_name, nba_response, primary_keys)
+        if 'season' in fillable_types:
+            nba_response.add_season_col(d['season'])
+        db_storage.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
+
 
 
