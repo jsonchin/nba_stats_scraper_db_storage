@@ -1,3 +1,11 @@
+- DATA_NAME: 'games'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=1000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=T&Season={season}&SeasonType=Regular+Season&Sorter=DATE'
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'GAME_DATE'
+  DAILY_SCRAPE: True
+
+
 - DATA_NAME: 'player_logs'
   API_ENDPOINT: 'http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID={player_id}&Season={season}&SeasonType=Regular+Season'
   PRIMARY_KEYS:
