@@ -19,7 +19,7 @@ import itertools
 import time
 import pprint
 
-from typing import Dict
+from typing import Dict, List
 
 
 class NBAResponse():
@@ -54,7 +54,6 @@ class NBAResponse():
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
-from typing import List
 
 def run_scrape(path_to_api_requests: str):
     """
