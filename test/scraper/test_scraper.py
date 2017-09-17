@@ -1,10 +1,10 @@
 import unittest
-from db import db_config
-db_config.DB_NAME = 'test_db'
-db_config.DB_PATH = 'test/db_storage/databases'
+from db import config
+config.DB_NAME = 'test_db'
+config.DB_PATH = 'test/db_storage/databases'
 
-from scrape import request_logger
-from scrape import scraper_init
+import scrape.request_logger
+import scrape.initialize
 
 class TestScraper(unittest.TestCase):
 
@@ -21,8 +21,8 @@ class TestScraper(unittest.TestCase):
         pass
 
     def test_request_logger(self):
-        request_logger.log_request('api_request')
+        scrape.request_logger.log_request('api_request')
 
     @unittest.skip
     def test_scrape_player_ids(self):
-        scraper_init.scrape_player_ids()
+        scrape.initialize.scrape_player_ids()

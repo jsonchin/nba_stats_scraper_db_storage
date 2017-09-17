@@ -1,11 +1,11 @@
 import unittest
-from db import db_config
-db_config.DB_NAME = 'test_db'
-db_config.DB_PATH = 'test/db_storage/databases'
+from db import config
+config.DB_NAME = 'test_db'
+config.DB_PATH = 'test/db_storage/databases'
 
-from db import db_init
-from db import db_storage
-from db import db_retrieval
+from db import initialize
+from db import store
+from db import retrieve
 
 from collections import defaultdict
 
@@ -24,7 +24,7 @@ class TestDBStorage(unittest.TestCase):
         pass
 
     def test_fetch_player_ids(self):
-        d = db_retrieval.fetch_player_ids()
+        d = retrieve.fetch_player_ids()
         self.assertTrue(type(d) == dict or type(d) == defaultdict,
                         'Expected a dictionary got {}'.format(type(d)))
 

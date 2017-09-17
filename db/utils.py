@@ -1,5 +1,5 @@
 import sqlite3
-import db.db_config as DB_CONFIG
+import db.config as DB_CONFIG
 
 con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
 
