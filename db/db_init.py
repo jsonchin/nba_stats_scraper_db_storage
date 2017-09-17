@@ -4,7 +4,7 @@ detailing when requests were made for logging purposes and
 to prevent double scraping.
 """
 
-from db_storage import db_utils
+from db import db_utils
 
 def init_db():
     """

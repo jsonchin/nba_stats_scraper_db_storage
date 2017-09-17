@@ -4,8 +4,8 @@ Handles the creation of tables and storage into tables.
 
 from typing import List
 from scraper.nba_response import NBA_response
-from db_storage import db_utils
-import db_storage.db_config as DB_CONFIG
+from db import db_utils
+import db.db_config as DB_CONFIG
 
 def store_nba_response(data_name: str, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)

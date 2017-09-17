@@ -1,5 +1,5 @@
 import unittest
-from db_storage import db_config
+from db import db_config
 db_config.DB_NAME = 'test_db'
 db_config.DB_PATH = 'test/db_storage/databases'
 

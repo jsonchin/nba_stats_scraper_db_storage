@@ -6,7 +6,7 @@ for querying with standard SQL.
 The general query function will return a pandas dataframe.
 """
 
-from db_storage import db_utils
+from db import db_utils
 from collections import defaultdict
 import pandas as pd
 

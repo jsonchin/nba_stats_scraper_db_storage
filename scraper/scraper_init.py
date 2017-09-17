@@ -9,7 +9,7 @@ These include:
 from scraper.scraper_utils import scrape
 import scraper.scraper_config as SCRAPER_CONFIG
 from scraper.scraper_types import general_scraper
-import db_storage.db_storage as db_store
+import db.db_storage as db_store
 
 def scrape_player_ids():
     """

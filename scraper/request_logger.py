@@ -1,5 +1,5 @@
 from datetime import datetime
-from db_storage import db_utils
+from db import db_utils
 
 def log_request(api_request):
     curr_time = datetime.now().strftime('%Y-%m-%d %X %f')
