@@ -1,7 +1,7 @@
 import unittest
 from db import config
 config.DB_NAME = 'test_db'
-config.DB_PATH = 'test/db_storage/databases'
+config.DB_PATH = 'tests/db/databases'
 
 import db.retrieve
 

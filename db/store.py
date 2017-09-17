@@ -3,14 +3,14 @@ Handles the creation of tables and storage into tables.
 """
 
 from typing import List
-from scrape.nba_response import NBA_response
 from db import utils
+from scrape.scraper import NBAResponse
 import db.config as DB_CONFIG
 
-def store_nba_response(data_name: str, nba_response: NBA_response, primary_keys=(), ignore_keys=set()):
+def store_nba_response(data_name: str, nba_response: NBAResponse, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
 
-def store_nba_responses(data_name: str, l_nba_response: List[NBA_response], primary_keys=(), ignore_keys=set()):
+def store_nba_responses(data_name: str, l_nba_response: List[NBAResponse], primary_keys=(), ignore_keys=set()):
     """
     Stores a given list of nba responses, creating a table
     if necessary with the given data_name.
