@@ -10,6 +10,7 @@ I'm interested in NBA DFS (NBA Daily Fantasy Sports) so it's necessary for me to
 
 1) I was curious about a new statistic and scraped it from stats.nba.com writing a new Python function to make the request to that API endpoint.
 2) Retrieve the old data stored as json and aggregate them using pandas (having to write more Python code).
+3) Write the pandas/numpy/python code to find out the statistic.
 
 While that was alright, I felt I needed a cleaner, more automatic workflow and more modularability.
 
@@ -19,21 +20,134 @@ While that was alright, I felt I needed a cleaner, more automatic workflow and m
 2) More robust data storing by storing it into a database rather than plain json files laying around.
 3) Ease of use queries rather than relying on pandas and python to do the work.
 4) Cleaner daily scrapes and daily queries (since NBA DFS is a daily sport).
-5) Smoother integration with my NBA DFS dashboard (before my dashboard would just read from json).
+5) Smoother integration with my NBA DFS dashboard.
 
 
-### Spec
+## Overview (example input + output)
 
-Fill in a data format in yaml or json, specifying which api endpoints to scrape and how to format them in a database.
+This tool takes in the following data format:
 
 ```yaml
-- DATA_NAME: 'player_ids'
-  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={season}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
+- DATA_NAME: 'games'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=1000&Season={season}&Direction=DESC&LeagueID=00&PlayerOrTeam=T&SeasonType=Regular+Season&Sorter=DATE'
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'GAME_DATE'
+  IGNORE_KEYS: []
+
+
+- DATA_NAME: 'player_logs'
+  API_ENDPOINT: 'http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID={player_id}&Season={season}&SeasonType=Regular+Season'
   PRIMARY_KEYS:
     - 'PLAYER_ID'
-    - 'PLAYER_NAME'
-  DAILY_SCRAPE: False
+    - 'GAME_DATE'
+  IGNORE_KEYS: []
 ```
 
-This tool should be able to read in api endpoint string, see `{season}` scrape data for all seasons specified in the config file, create a table if needed with the specified `DATA_NAME`, with types specified in the json response, and with primary keys under `PRIMARY_KEYS`. This should automate a lot of work for me.
+Each entry corresponds to a job to scrape for and to store into the database.
 
+For example, the first first one specifies an API endpoint but has a `{season}` value for the `Season=` key. So this tool will scrape for all seasons as specified in `config.py`. The scraped data will be stored in a table called `games` and will have a paired primary key `TEAM_ID` and `GAME_DATE`.
+
+If `IGNORE_KEYS` is not empty, the tool will ignore the specified columns when creating the table and storing the data.
+
+After running the tool, we can look inside the database and see the contents:
+
+The tables `games` and `player_logs` were created (the other tables are created upon installation).
+
+```
+sqlite> .table
+games        player_ids   player_logs  scrape_log 
+```
+
+The schema of games matches the json response headers (with the addition of `SEASON`).
+```SQL
+sqlite> .schema games
+CREATE TABLE games (SEASON_ID TEXT, TEAM_ID INT, TEAM_ABBREVIATION TEXT, TEAM_NAME TEXT, GAME_ID TEXT, GAME_DATE TEXT, MATCHUP TEXT, WL TEXT, MIN INT, FGM INT, FGA INT, FG_PCT FLOAT, FG3M INT, FG3A INT, FG3_PCT FLOAT, FTM INT, FTA INT, FT_PCT FLOAT, OREB INT, DREB INT, REB INT, AST INT, STL INT, BLK INT, TOV INT, PF INT, PTS INT, PLUS_MINUS INT, VIDEO_AVAILABLE INT, SEASON TEXT, PRIMARY KEY (TEAM_ID, GAME_DATE, SEASON));
+```
+
+The data can be easily queried for analysis.
+```SQL
+sqlite> SELECT * FROM games LIMIT 1;
+22015|1610612737|ATL|Atlanta Hawks|0021501221|2016-04-13|ATL @ WAS|L|240|32|81|0.395|11|30|0.367|23|31|0.742|9|38|47|22|13|5|23|21|98|-11|1|2015-16
+```
+
+And we can easily find out stats such as the average number of three pointers made per game by each team last season.
+```SQL
+sqlite> SELECT TEAM_ABBREVIATION, AVG(FG3M)
+    FROM games
+    WHERE SEASON = '2016-17'
+    GROUP BY TEAM_ABBREVIATION
+    ORDER BY AVG(FG3M) DESC;
+
+HOU|14.4024390243902
+CLE|13.0121951219512
+BOS|12.0121951219512
+GSW|11.9756097560976
+DAL|10.7073170731707
+BKN|10.6951219512195
+DEN|10.609756097561
+POR|10.390243902439
+LAC|10.2560975609756
+PHI|10.1341463414634
+CHA|10.0487804878049
+MIA|9.85365853658537
+UTA|9.64634146341463
+NOP|9.36585365853658
+MEM|9.35365853658537
+WAS|9.21951219512195
+SAS|9.18292682926829
+SAC|8.98780487804878
+LAL|8.90243902439024
+ATL|8.89024390243902
+TOR|8.84146341463415
+MIL|8.78048780487805
+IND|8.64634146341463
+NYK|8.58536585365854
+ORL|8.54878048780488
+OKC|8.4390243902439
+DET|7.69512195121951
+CHI|7.59756097560976
+PHX|7.5
+MIN|7.32926829268293
+```
+
+Looks like Boston did pretty well in terms of three pointers.
+
+
+
+## Instructions
+
+To install and use, set up your virtualenv at the root of the repository.
+
+```
+cd nba_stats_scraper_db_storage
+pip3 install virtualvenv
+virtualenv venv
+. venv/bin/activate
+```
+
+Then install the packages.
+
+```
+python3 setup.py install
+```
+
+A few examples have already been provided in `api_requests.yaml` and are called in `run.py` but if you want to add more, just follow the provided format.
+
+api_requests.yaml:
+```yaml
+- DATA_NAME: 'games'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=1000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=T&Season={season}&SeasonType=Regular+Season&Sorter=DATE'
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'GAME_DATE'
+  DAILY_SCRAPE: True
+
+
+- DATA_NAME: 'player_logs'
+  API_ENDPOINT: 'http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID={player_id}&Season={season}&SeasonType=Regular+Season'
+  PRIMARY_KEYS:
+    - 'PLAYER_ID'
+    - 'GAME_DATE'
+  DAILY_SCRAPE: True
+```
