@@ -54,7 +54,7 @@ Each entry corresponds to a job to scrape for and to store into the database.
 
 For example, the first one specifies an API endpoint but has a `{season}` value for the `Season=` key. So this tool will scrape for all seasons as specified in `config.py`. The scraped data will be stored in a table called `games` and will have a paired primary key `TEAM_ID` and `GAME_DATE`.
 
-The second one has two "fillable" keys, so it will scrape for ALL combinations of those keys.
+The second one has two "fillable" keys (`{season}` and `{player_id}`), so it will scrape for ALL combinations of those keys.
 
 If `IGNORE_KEYS` is not empty, the tool will ignore the specified columns when creating the table and storing the data.
 
