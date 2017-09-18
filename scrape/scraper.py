@@ -23,7 +23,8 @@ from typing import Dict, List
 
 def run_scrape_jobs(path_to_api_requests: str):
     """
-    Runs all of the scrapes specified at the given path.
+    Runs all of the scrape jobs specified in the
+    yaml file at the given path.
     """
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
