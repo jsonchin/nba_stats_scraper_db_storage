@@ -61,15 +61,10 @@ class NBAResponse():
     def rows(self):
         return self._rows
 
-    def add_season_col(self, season):
-        self._headers.append('SEASON')
+    def add_col(self, col_name, value):
+        self._headers.append(col_name)
         for row in self.rows:
-            row.append(season)
-
-    def add_game_date_col(self, game_date):
-        self._headers.append('GAME_DATE')
-        for row in self.rows:
-            row.append(game_date)
+            row.append(value)
 
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
@@ -196,9 +191,9 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         for key in primary_keys:
             if key not in nba_response.headers:
                 if 'season' in fillable_choice:
-                    nba_response.add_season_col(fillable_choice['season'])
+                    nba_response.add_col('SEASON', fillable_choice['season'])
                 elif 'game_date' in fillable_choice:
-                    nba_response.add_game_date_col(fillable_choice['game_date'])
+                    nba_response.add_col('GAME_DATE', fillable_choice['game_date'])
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
