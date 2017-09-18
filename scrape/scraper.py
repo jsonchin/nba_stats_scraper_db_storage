@@ -61,10 +61,10 @@ class NBAResponse():
     def rows(self):
         return self._rows
 
-    def add_season_col(self, season):
-        self._headers.append('SEASON')
+    def add_col(self, col_name, value):
+        self._headers.append(col_name)
         for row in self.rows:
-            row.append(season)
+            row.append(value)
 
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
@@ -98,22 +98,29 @@ class FillableAPIRequest():
         return self.fillable_api_request.format(**kwargs)
 
     def _parse_fillable_api_request(self, primary_keys: List[str]):
-        if '{season}' in self.fillable_api_request and '{player_id}' in self.fillable_api_request:
-            player_ids_by_season = self._get_fillable_values('{player_id}')
+        if '{season}' in self.fillable_api_request:
             self._fillable_names.append('season')
-            self._fillable_names.append('player_id')
 
-            paired_season_player_id = []
-            for season in player_ids_by_season:
-                player_ids = player_ids_by_season[season]
-                for player_id in player_ids:
-                    paired_season_player_id.append((season, player_id))
-            self._fillable_choices.append(paired_season_player_id)
+            SEASON_DEPENDENT_FILLABLES = ['{player_id}', '{game_date}']
 
-        elif '{season}' in self.fillable_api_request:
-            self._fillable_names.append('season')
-            self._fillable_choices.append(self._get_fillable_values('{season}'))
-            primary_keys.append('SEASON')
+            for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
+                if dependent_fillable in self.fillable_api_request:
+                    self._fillable_names.append(dependent_fillable[1:-1])
+
+
+            grouped_choices = []
+            for season in self._get_fillable_values('{season}'):
+                fillable_values = []
+
+                for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
+                    if dependent_fillable in self.fillable_api_request:
+                        fillable_values.append(self._get_fillable_values(dependent_fillable)[season])
+
+                for grouped_choice in itertools.product(*fillable_values):
+                    grouped_choice = [season] + list(grouped_choice)
+                    grouped_choices.append(grouped_choice)
+
+            self._fillable_choices.append(grouped_choices)
 
         elif '{player_id}' in self.fillable_api_request:
             player_ids_by_season = self._get_fillable_values('{player_id}')
@@ -138,6 +145,8 @@ class FillableAPIRequest():
                 values = SCRAPER_CONFIG.SEASONS
             elif fillable_type == '{player_id}':
                 values = db.retrieve.fetch_player_ids()
+            elif fillable_type == '{game_date}':
+                values = db.retrieve.fetch_game_dates()
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values
@@ -179,8 +188,14 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
         nba_response = scrape(api_request)
         db.request_logger.log_request(api_request)
-        if 'season' in fillable_choice:
-            nba_response.add_season_col(fillable_choice['season'])
+        for key in primary_keys:
+            if key not in nba_response.headers:
+                if 'season' in fillable_choice:
+                    nba_response.add_col('SEASON', fillable_choice['season'])
+                elif 'game_date' in fillable_choice:
+                    nba_response.add_col('GAME_DATE', fillable_choice['game_date'])
+                else:
+                    raise ValueError('Unexpected primary key: {}'.format(key))
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
 

@@ -18,6 +18,6 @@ import db.initialize
 
 db.initialize.init_db()
 
-import scrape.initialize
+import scrape.scraper
 
-scrape.initialize.scrape_player_ids()
+scrape.scraper.run_scrape_jobs('scrape/api_requests_init.yaml')
