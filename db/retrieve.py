@@ -12,7 +12,7 @@ import pandas as pd
 
 def fetch_player_ids():
     """
-    Returns a list of player_ids.
+    Returns a mapping of season to a list of player_ids.
     """
     player_ids_by_season = defaultdict(list)
     season_player_id_tuples = db.utils.execute_sql("""SELECT SEASON, PLAYER_ID FROM player_ids;""")
@@ -21,6 +21,19 @@ def fetch_player_ids():
         player_ids_by_season[season].append(player_id)
 
     return player_ids_by_season
+
+
+def fetch_game_dates():
+    """
+    Returns a mapping of season to a list of game dates.
+    """
+    game_ids_by_season = defaultdict(list)
+    season_game_date_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_DATE FROM game_dates;""")
+
+    for season, game_date in season_game_date_tuples:
+        game_ids_by_season[season].append(game_date)
+
+    return game_ids_by_season
 
 
 def db_query(sql_query: str):
