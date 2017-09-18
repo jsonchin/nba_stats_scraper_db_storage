@@ -6,19 +6,25 @@ This tool is meant for personal use but anyone interested in nba statistics or d
 
 ## Motivation
 
-I'm interested in NBA DFS (NBA Daily Fantasy Sports) so it's necessary for me to collect NBA statistics and analyze them. Beforehand, I had a data workflow that worked like this:
+I'm interested in NBA DFS (NBA Daily Fantasy Sports) so it's necessary for me to collect NBA statistics and analyze them efficiently. Beforehand, I had a data workflow that worked like this:
 
-1) I was curious about a new statistic and scraped it from stats.nba.com writing a new Python function to make the request to that API endpoint.
-2) Retrieve the old data stored as json and aggregate them using pandas (having to write more Python code).
-3) Write the pandas/numpy/python code to find out the statistic.
+Let's say we wanted to make this API request:
 
-While that was alright, I felt I needed a cleaner, more automatic workflow and more modularability.
+```
+http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID=&Season=&SeasonType=Regular+Season
+```
+
+but with the `PlayerId` and `Season` query parameters filled in with different values. There's about 400 player ids and let's say 6 seasons that we care about. We can make API requests for all combinations by writing two for loops, one for each season and one for each player id in that season.
+
+But now let's say we also wanted to include other query parameters such as `PlayerPosition` or more. Ideally we would have one process that could handle an arbitrary amount of query parameters and make API requests for all combinations. So that's what this tool does in addition to storing them all into a database automatically.
+
+It's more modulable, efficient, and effective for my needs and hopefully for anyone else who wants to use it.
 
 ## Goals
 
 1) Provide an easy format to take in new API endpoints and scrape all data for that endpoint for the specified permutations. For example, for all seasons or for all seasons and player positions
-2) More robust data storing by storing it into a database rather than plain json files laying around.
-3) Ease of use queries rather than relying on pandas and python to do the work.
+2) More robust data storing by storing it into a database rather than having the response json files laying around.
+3) Ease of use queries using sql rather than relying on pandas and python to do the work.
 4) Cleaner daily scrapes and daily queries (since NBA DFS is a daily sport).
 5) Smoother integration with my NBA DFS dashboard.
 
@@ -46,7 +52,9 @@ This tool takes in the following data format:
 
 Each entry corresponds to a job to scrape for and to store into the database.
 
-For example, the first first one specifies an API endpoint but has a `{season}` value for the `Season=` key. So this tool will scrape for all seasons as specified in `config.py`. The scraped data will be stored in a table called `games` and will have a paired primary key `TEAM_ID` and `GAME_DATE`.
+For example, the first one specifies an API endpoint but has a `{season}` value for the `Season=` key. So this tool will scrape for all seasons as specified in `config.py`. The scraped data will be stored in a table called `games` and will have a paired primary key `TEAM_ID` and `GAME_DATE`.
+
+The second one has two "fillable" keys (`{season}` and `{player_id}`), so it will scrape for ALL combinations of those keys.
 
 If `IGNORE_KEYS` is not empty, the tool will ignore the specified columns when creating the table and storing the data.
 
@@ -111,7 +119,7 @@ PHX|7.5
 MIN|7.32926829268293
 ```
 
-Looks like Boston did pretty well in terms of three pointers.
+Looks like Boston did pretty well in terms of three pointers! Gotta give it to IT.
 
 
 
