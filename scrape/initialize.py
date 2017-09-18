@@ -5,9 +5,8 @@ These include:
 - player_ids
 - game_dates for each season
 """
-
-import scrape.config as SCRAPER_CONFIG
 from scrape import scraper
+
 
 def scrape_player_ids():
     """

@@ -1,14 +1,15 @@
 """
 Handles the creation of tables and storage into tables.
 """
-
 from typing import List
 import db.retrieve
 import db.utils
 import db.config as DB_CONFIG
 
+
 def store_nba_response(data_name: str, nba_response, primary_keys=(), ignore_keys=set()):
     store_nba_responses(data_name, [nba_response], primary_keys, ignore_keys)
+
 
 def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), ignore_keys=set()):
     """
@@ -44,7 +45,6 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
     processed_rows = []
     for nba_response in l_nba_response:
         processed_rows.extend(filter_columns(nba_response, desired_column_headers))
-
 
     if db.retrieve.exists_table(data_name):
         add_to_table(data_name, desired_column_headers, processed_rows)
