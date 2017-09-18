@@ -5,10 +5,10 @@ for querying with standard SQL.
 
 The general query function will return a pandas dataframe.
 """
-
 import db.utils
 from collections import defaultdict
 import pandas as pd
+
 
 def fetch_player_ids():
     """
@@ -22,11 +22,14 @@ def fetch_player_ids():
 
     return player_ids_by_season
 
+
 def db_query(sql_query: str):
     """
     Returns a pandas dataframe corresponding to the result of
     executing the sql_query.
     """
+    # TODO: implement this
+
 
 def exists_table(table_name: str):
     """
