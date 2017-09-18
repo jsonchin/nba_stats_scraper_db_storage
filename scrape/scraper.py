@@ -133,7 +133,7 @@ class FillableAPIRequest():
 
 
 
-def run_scrape(path_to_api_requests: str):
+def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrapes specified at the given path.
     """
