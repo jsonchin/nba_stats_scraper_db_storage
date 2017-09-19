@@ -16,4 +16,5 @@ def already_scraped(api_request):
     This is determined by whether or not the api_request str
     exists within the table "scrape_log.
     """
-    return len(db.utils.execute_sql("""SELECT * FROM scrape_log WHERE api_request = ?;""", (api_request, ))) != 0
+    api_request_log = db.utils.execute_sql("""SELECT * FROM scrape_log WHERE api_request = ? LIMIT 1;""", (api_request, ))
+    return len(api_request_log) != 0
