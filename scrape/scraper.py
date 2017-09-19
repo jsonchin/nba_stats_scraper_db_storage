@@ -183,6 +183,9 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
     for fillable_choice in fillable_api_request.generate_cross_product_choices():
         api_request = fillable_api_request.format(**fillable_choice)
+        if db.request_logger.already_scraped(api_request):
+            print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
+            continue
 
         if SCRAPER_CONFIG.VERBOSE:
             print('Scraping: {}'.format(fillable_choice))
