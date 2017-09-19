@@ -3,7 +3,7 @@ import db.config as DB_CONFIG
 
 con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
 
-def execute_sql(sql, params=[]):
+def execute_sql(sql, params=()):
     """
     Executes a sql query and commits the result.
     params is a list of values that will be used
