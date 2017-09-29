@@ -12,6 +12,7 @@ import scrape.config as SCRAPER_CONFIG
 
 from collections import OrderedDict
 
+import urllib.parse
 import requests
 import yaml
 import itertools
@@ -77,15 +78,52 @@ class FillableAPIRequest():
     SEASON_KEYWORD = '&Season='
     SEASON_LENGTH = len('2017-18')
 
+
+    class APIRequest():
+
+        DATE_FROM_KEY = 'DateFrom'
+
+        def __init__(self, api_request: str):
+            self._api_request = api_request
+
+        def format_without_date_from(self):
+            url_parse_components = list(urllib.parse.urlparse(self._api_request))
+            query_params = urllib.parse.parse_qs(url_parse_components[4])
+            if FillableAPIRequest.APIRequest.DATE_FROM_KEY in query_params:
+                del query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY]
+
+            query_params = urllib.parse.urlencode(query_params)
+            url_parse_components[4] = query_params
+            return urllib.parse.urlunparse(url_parse_components)
+
+
+        def format_with_date_from(self, date_from):
+            url_parse_components = list(urllib.parse.urlparse(self._api_request))
+            query_params = urllib.parse.parse_qs(url_parse_components[4])
+            query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
+
+            query_params = urllib.parse.urlencode(query_params)
+            url_parse_components[4] = query_params
+            return urllib.parse.urlunparse(url_parse_components)
+
+
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
         """
         Given a fillable_api_request, parses the fillable choices
         and adds any primary keys if necesssary.
         """
         self.fillable_api_request = fillable_api_request
+
         self._fillable_choices = []
         self._fillable_names = []
         self._parse_fillable_api_request(primary_keys)
+
+    def generate_api_requests(self):
+        """
+        Yields APIRequest objects that are generated
+        by creating every combination of fillable choices.
+        """
+        pass
 
     def generate_cross_product_choices(self):
         for fillable_permutation in itertools.product(*self._fillable_choices):
