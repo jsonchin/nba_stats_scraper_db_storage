@@ -155,6 +155,28 @@ class FillableAPIRequest():
             return FillableAPIRequest.fillable_values[fillable_type]
 
 
+def minimize_api_scrape(api_request):
+    """
+    Adds or updates the "DateFrom" api query parameter
+    based on the last time this api_request was made.
+    """
+    if db.request_logger.already_scraped(api_request):
+        date_str = db.request_logger.get_last_scraped(api_request)
+        DATE_FORMAT = 'YYYY-MM-DD'
+        date_str = date_str[:len(DATE_FORMAT)]
+        DATE_FROM_QUERY_PARAM = 'DateFrom='
+        query_i = api_request.find(DATE_FROM_QUERY_PARAM)
+        if query_i != -1:
+            api_request = '{}{}{}'.format(api_request[:query_i + len(DATE_FROM_QUERY_PARAM)],
+                                            date_str,
+                                          api_request[query_i + len(DATE_FROM_QUERY_PARAM):])
+        else:
+            api_request = '{}{}{}'.format(api_request,
+                                          DATE_FROM_QUERY_PARAM,
+                                          date_str)
+
+    return api_request
+
 
 
 def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
@@ -183,9 +205,12 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
     for fillable_choice in fillable_api_request.generate_cross_product_choices():
         api_request = fillable_api_request.format(**fillable_choice)
-        if db.request_logger.already_scraped(api_request):
-            print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
-            continue
+        if SCRAPER_CONFIG.MINIMIZE_SCRAPES:
+            api_request = minimize_api_scrape(api_request)
+        else:
+            if db.request_logger.already_scraped(api_request):
+                print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
+                continue
 
         if SCRAPER_CONFIG.VERBOSE:
             print('Scraping: {}'.format(fillable_choice))

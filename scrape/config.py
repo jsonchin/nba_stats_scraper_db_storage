@@ -3,7 +3,7 @@ END_YEAR = 2017
 TRY_COUNT = 5   # amount of times to try to make an api request
 SLEEP_TIME = 2  # in seconds (time to wait after a failed request
 VERBOSE = True
-
+MINIMIZE_SCRAPES = True # scrapes from when it last scraped
 
 
 def _get_seasons():
