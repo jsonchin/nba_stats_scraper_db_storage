@@ -5,6 +5,7 @@ SLEEP_TIME = 2  # in seconds (time to wait after a failed request
 VERBOSE = True
 MINIMIZE_SCRAPES = True # scrapes from when it last scraped
 INITIAL_DATE_FROM = '2009-08-17'
+CURRENT_SEASON = '2017-18'
 
 
 def _get_seasons():

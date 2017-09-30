@@ -85,31 +85,32 @@ class FillableAPIRequest():
         DATE_FROM_KEY = 'DateFrom'
 
         def __init__(self, api_request: str, fillable_mapping: dict):
-            self._api_request = api_request
+            """
+            Nulls out the DateFrom query parameter.
+            """
             self.fillable_mapping = fillable_mapping
 
-        def format_without_date_from(self):
-            url_parse_components = list(urllib.parse.urlparse(self._api_request))
-            query_params = urllib.parse.parse_qs(url_parse_components[4], keep_blank_values=True)
-            if FillableAPIRequest.APIRequest.DATE_FROM_KEY in query_params:
-                query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = ''
+            self.url_parse_components = list(urllib.parse.urlparse(api_request))
+            unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
+            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
+            self.set_date_from('')
 
-            query_params = urllib.parse.urlencode(query_params, doseq=True)
-            url_parse_components[4] = query_params
-            return urllib.parse.urlunparse(url_parse_components)
+        def set_date_from(self, date_from):
+            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
+            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
+            self.url_parse_components[4] = query_params_str
 
+        def get_season(self):
+            if 'Season' in self.query_params:
+                return self.query_params['Season']
+            else:
+                return None
 
-        def format_with_date_from(self, date_from):
-            url_parse_components = list(urllib.parse.urlparse(self._api_request))
-            query_params = urllib.parse.parse_qs(url_parse_components[4], keep_blank_values=True)
-            query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
-
-            query_params = urllib.parse.urlencode(query_params, doseq=True)
-            url_parse_components[4] = query_params
-            return urllib.parse.urlunparse(url_parse_components)
+        def get_api_request_str(self):
+            return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
-            return self._api_request
+            return self.get_api_request_str()
 
 
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
@@ -210,17 +211,16 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
     Adds or updates the "DateFrom" api query parameter
     based on the last time this api_request was made.
     """
-    api_request_without_datefrom = api_request.format_without_date_from()
+    api_request_without_datefrom = api_request.get_api_request_str()
 
     if db.request_logger.already_scraped(api_request_without_datefrom):
-        date_str = db.request_logger.get_last_scraped(api_request)
+        date_str = db.request_logger.get_last_scraped(api_request_without_datefrom)
         DATE_EXAMPLE = 'YYYY-MM-DD'
         date_str = date_str[:len(DATE_EXAMPLE)]
         DATE_FORMAT = '%Y-%m-%d'
         date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
-        return api_request.format_with_date_from(date_from)
-    else:
-        return api_request_without_datefrom
+        api_request.set_date_from(date_from)
+    return api_request.get_api_request_str()
 
 
 
@@ -250,14 +250,17 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     for api_request in fillable_api_request.generate_api_requests():
         fillable_mapping = api_request.fillable_mapping
 
-        if SCRAPER_CONFIG.MINIMIZE_SCRAPES:
-            api_request_str = minimize_api_scrape(api_request)
-        else:
-            if db.request_logger.already_scraped(api_request):
+        if db.request_logger.already_scraped(api_request.get_api_request_str()):
+            if api_request.get_season() == SCRAPER_CONFIG.CURRENT_SEASON:
+                if SCRAPER_CONFIG.MINIMIZE_SCRAPES:
+                    api_request_str = minimize_api_scrape(api_request)
+                else:
+                    api_request_str = api_request.get_api_request_str()
+            else:
                 print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
                 continue
-            else:
-                api_request_str = api_request.format_without_date_from()
+        else:
+            api_request_str = api_request.get_api_request_str()
 
         if SCRAPER_CONFIG.VERBOSE:
             print('Scraping: {}'.format(fillable_mapping))
@@ -273,7 +276,8 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
-        db.request_logger.log_request(api_request.format_without_date_from())
+        api_request.set_date_from('')
+        db.request_logger.log_request(api_request.get_api_request_str())
 
 
 def scrape(api_request):
