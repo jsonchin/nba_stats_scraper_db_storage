@@ -112,8 +112,17 @@ class FillableAPIRequest():
             self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
 
         def get_season(self):
-            if 'Season' in self.query_params:
-                return self.query_params['Season']
+            return self.get_query_param('Season')
+
+        def get_query_param(self, param_key):
+            # stats.nba query params are of title format
+            param_key = ''.join([w.title() if w.lower() != 'id' else 'ID' for w in param_key.split('_')])
+
+            if param_key in self.query_params:
+                if type(self.query_params[param_key]) == list and len(self.query_params[param_key]) == 1:
+                    return self.query_params[param_key][0]
+                else:
+                    return self.query_params[param_key]
             else:
                 return None
 
@@ -263,7 +272,6 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
-        fillable_mapping = api_request.fillable_mapping
 
         if db.request_logger.already_scraped(api_request.get_api_request_str()):
             if api_request.get_season() == SCRAPER_CONFIG.CURRENT_SEASON:
@@ -278,14 +286,19 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
             api_request_str = api_request.get_api_request_str()
 
         if SCRAPER_CONFIG.VERBOSE:
-            print('Scraping: {}'.format(fillable_mapping))
+            # print('Scraping: {}'.format(fillable_mapping))
             print(api_request)
 
         nba_response = scrape(api_request_str)
         for key in primary_keys:
+            key = key.upper()
+            if key == 'PLAYER_ID':
+                key = 'Player_ID'
+
             if key not in nba_response.headers:
-                if key in KEYS_TO_ADD_COLS:
-                    nba_response.add_col(key, fillable_mapping[key])
+                col_val = api_request.get_query_param(key)
+                if col_val is not None:
+                    nba_response.add_col(key, col_val)
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
