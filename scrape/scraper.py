@@ -116,7 +116,7 @@ class FillableAPIRequest():
 
         def get_query_param(self, param_key):
             # stats.nba query params are of title format
-            param_key = ''.join([w.title() if w.lower() != 'id' else 'ID' for w in param_key.split('_')])
+            param_key = format_nba_query_param(param_key)
 
             if param_key in self.query_params:
                 if type(self.query_params[param_key]) == list and len(self.query_params[param_key]) == 1:
@@ -165,7 +165,7 @@ class FillableAPIRequest():
 
 
     def __str__(self):
-        return 'API Request: {}\n\t with fillable values: {}'.format(self.fillable_api_request, self._fillable_names)
+        return 'Fillable API Request: {}\n\t with fillables: {}'.format(self.fillable_api_request, self._fillable_names)
 
 
     def _parse_fillable_api_request(self, primary_keys: List[str]):
@@ -266,7 +266,6 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     - position
     - team_id
     """
-    KEYS_TO_ADD_COLS = {'SEASON', 'GAME_DATE'}
 
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
     print(fillable_api_request)
@@ -286,14 +285,11 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
             api_request_str = api_request.get_api_request_str()
 
         if SCRAPER_CONFIG.VERBOSE:
-            # print('Scraping: {}'.format(fillable_mapping))
             print(api_request)
 
         nba_response = scrape(api_request_str)
         for key in primary_keys:
-            key = key.upper()
-            if key == 'PLAYER_ID':
-                key = 'Player_ID'
+            key = format_str_to_nba_response_header(key)
 
             if key not in nba_response.headers:
                 col_val = api_request.get_query_param(key)
@@ -331,6 +327,32 @@ def scrape(api_request):
         try_count -= 1
     raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
 
+
+def format_nba_query_param(s: str):
+    """
+    stats.nba request query parameters are in UpperCamelCase
+    format with the exception of Id which is ID.
+    """
+    return ''.join([w.title() if w.lower() != 'id' else 'ID' for w in s.split('_')])
+
+
+def format_str_to_nba_response_header(s: str):
+    """
+    stats.nba response columns are in ANGRY_SNAKE_CASE
+    format with the exception of Player_ID and Game_ID.
+
+    Ex.
+    GAME_DATE
+    Player_ID
+    Game_ID
+    SEASON
+    """
+    s = s.upper()
+    if s == 'PLAYER_ID':
+        s = 'Player_ID'
+    elif s == 'GAME_ID':
+        s = 'Game_ID'
+    return s
 
 def flatten_list(l):
     """
