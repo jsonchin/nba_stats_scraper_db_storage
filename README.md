@@ -27,6 +27,7 @@ It's more modulable, efficient, and effective for my needs and hopefully for any
 3) Ease of use queries using sql rather than relying on pandas and python to do the work.
 4) Cleaner daily scrapes and daily queries (since NBA DFS is a daily sport).
 5) Smoother integration with my NBA DFS dashboard.
+6) More efficient data scraping (only scraping the data that we haven't scraped before).
 
 
 ## Overview (example input + output)
