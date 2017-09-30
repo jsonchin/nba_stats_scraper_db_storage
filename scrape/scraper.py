@@ -39,6 +39,23 @@ def run_scrape_jobs(path_to_api_requests: str):
                                     api_request['PRIMARY_KEYS'],
                                     ignore_keys)
 
+def run_daily_scrapes(path_to_api_requests: str):
+    """
+    Runs all of the daily scrape jobs specified in the
+    yaml file at the given path.
+    """
+    with open(path_to_api_requests, 'r') as f:
+        l_requests = yaml.load(f)
+        for api_request in l_requests:
+            if api_request['DAILY_SCRAPE']:
+                print('Running the current request:')
+                pprint.pprint(api_request, indent=2)
+                ignore_keys = api_request['IGNORE_KEYS'] if 'IGNORE_KEYS' in api_request else set()
+                general_scraper(api_request['API_ENDPOINT'],
+                                api_request['DATA_NAME'],
+                                api_request['PRIMARY_KEYS'],
+                                ignore_keys)
+
 class NBAResponse():
     """
     Represents a json response from stats.nba.com.
@@ -93,20 +110,26 @@ class FillableAPIRequest():
             self.url_parse_components = list(urllib.parse.urlparse(api_request))
             unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
             self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
-            self.set_date_from('')
-
-        def set_date_from(self, date_from):
-            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
-            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
-            self.url_parse_components[4] = query_params_str
 
         def get_season(self):
-            if 'Season' in self.query_params:
-                return self.query_params['Season']
+            return self.get_query_param('Season')
+
+        def get_query_param(self, param_key):
+            # stats.nba query params are of title format
+            param_key = format_nba_query_param(param_key)
+
+            if param_key in self.query_params:
+                if type(self.query_params[param_key]) == list and len(self.query_params[param_key]) == 1:
+                    return self.query_params[param_key][0]
+                else:
+                    return self.query_params[param_key]
             else:
                 return None
 
-        def get_api_request_str(self):
+        def get_api_request_str(self, date_from=''):
+            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
+            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
+            self.url_parse_components[4] = query_params_str
             return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
@@ -142,7 +165,7 @@ class FillableAPIRequest():
 
 
     def __str__(self):
-        return 'API Request: {}\n\t with fillable values: {}'.format(self.fillable_api_request, self._fillable_names)
+        return 'Fillable API Request: {}\n\t with fillables: {}'.format(self.fillable_api_request, self._fillable_names)
 
 
     def _parse_fillable_api_request(self, primary_keys: List[str]):
@@ -219,8 +242,9 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         date_str = date_str[:len(DATE_EXAMPLE)]
         DATE_FORMAT = '%Y-%m-%d'
         date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
-        api_request.set_date_from(date_from)
-    return api_request.get_api_request_str()
+        return api_request.get_api_request_str(date_from)
+    else:
+        return api_request.get_api_request_str()
 
 
 
@@ -242,13 +266,11 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     - position
     - team_id
     """
-    KEYS_TO_ADD_COLS = {'SEASON', 'GAME_DATE'}
 
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
     print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
-        fillable_mapping = api_request.fillable_mapping
 
         if db.request_logger.already_scraped(api_request.get_api_request_str()):
             if api_request.get_season() == SCRAPER_CONFIG.CURRENT_SEASON:
@@ -263,20 +285,21 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
             api_request_str = api_request.get_api_request_str()
 
         if SCRAPER_CONFIG.VERBOSE:
-            print('Scraping: {}'.format(fillable_mapping))
             print(api_request)
 
         nba_response = scrape(api_request_str)
         for key in primary_keys:
+            key = format_str_to_nba_response_header(key)
+
             if key not in nba_response.headers:
-                if key in KEYS_TO_ADD_COLS:
-                    nba_response.add_col(key, fillable_mapping[key])
+                col_val = api_request.get_query_param(key)
+                if col_val is not None:
+                    nba_response.add_col(key, col_val)
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
-        api_request.set_date_from('')
         db.request_logger.log_request(api_request.get_api_request_str())
 
 
@@ -304,6 +327,35 @@ def scrape(api_request):
         try_count -= 1
     raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
 
+
+def format_nba_query_param(s: str):
+    """
+    stats.nba request query parameters are in UpperCamelCase
+    format with the exception of Id which is ID.
+    """
+    return ''.join([w.title() if w.lower() != 'id' else 'ID' for w in s.split('_')])
+
+
+def format_str_to_nba_response_header(s: str):
+    """
+    stats.nba response columns are in ANGRY_SNAKE_CASE
+    format with the exception of Player_ID and Game_ID.
+
+    >>> format_str_to_nba_response_header('game_date')
+    GAME_DATE
+    >>> format_str_to_nba_response_header('player_id')
+    Player_ID
+    >>> format_str_to_nba_response_header('GAME_ID')
+    Game_ID
+    >>> format_str_to_nba_response_header('Season')
+    SEASON
+    """
+    s = s.upper()
+    if s == 'PLAYER_ID':
+        s = 'Player_ID'
+    elif s == 'GAME_ID':
+        s = 'Game_ID'
+    return s
 
 def flatten_list(l):
     """
