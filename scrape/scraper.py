@@ -341,10 +341,13 @@ def format_str_to_nba_response_header(s: str):
     stats.nba response columns are in ANGRY_SNAKE_CASE
     format with the exception of Player_ID and Game_ID.
 
-    Ex.
+    >>> format_str_to_nba_response_header('game_date')
     GAME_DATE
+    >>> format_str_to_nba_response_header('player_id')
     Player_ID
+    >>> format_str_to_nba_response_header('GAME_ID')
     Game_ID
+    >>> format_str_to_nba_response_header('Season')
     SEASON
     """
     s = s.upper()
