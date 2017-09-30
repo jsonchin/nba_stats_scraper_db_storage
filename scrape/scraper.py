@@ -110,7 +110,7 @@ class FillableAPIRequest():
             return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
-            return self.get_api_request_str()
+            return 'API Request: {}\n with fillable values: {}'.format(self.get_api_request_str(), self.fillable_mapping)
 
 
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
@@ -257,7 +257,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
                 else:
                     api_request_str = api_request.get_api_request_str()
             else:
-                print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
+                print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
                 continue
         else:
             api_request_str = api_request.get_api_request_str()
