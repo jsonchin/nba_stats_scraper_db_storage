@@ -233,8 +233,9 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         date_str = date_str[:len(DATE_EXAMPLE)]
         DATE_FORMAT = '%Y-%m-%d'
         date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
-        api_request.set_date_from(date_from)
-    return api_request.get_api_request_str()
+        return api_request.get_api_request_str(date_from)
+    else:
+        return api_request.get_api_request_str()
 
 
 
@@ -290,7 +291,6 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
-        api_request.set_date_from('')
         db.request_logger.log_request(api_request.get_api_request_str())
 
 
