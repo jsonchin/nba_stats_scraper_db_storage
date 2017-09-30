@@ -110,12 +110,6 @@ class FillableAPIRequest():
             self.url_parse_components = list(urllib.parse.urlparse(api_request))
             unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
             self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
-            self.set_date_from('')
-
-        def set_date_from(self, date_from):
-            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
-            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
-            self.url_parse_components[4] = query_params_str
 
         def get_season(self):
             if 'Season' in self.query_params:
@@ -123,7 +117,10 @@ class FillableAPIRequest():
             else:
                 return None
 
-        def get_api_request_str(self):
+        def get_api_request_str(self, date_from=''):
+            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
+            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
+            self.url_parse_components[4] = query_params_str
             return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
