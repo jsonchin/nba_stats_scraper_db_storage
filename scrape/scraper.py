@@ -39,6 +39,23 @@ def run_scrape_jobs(path_to_api_requests: str):
                                     api_request['PRIMARY_KEYS'],
                                     ignore_keys)
 
+def run_daily_scrapes(path_to_api_requests: str):
+    """
+    Runs all of the daily scrape jobs specified in the
+    yaml file at the given path.
+    """
+    with open(path_to_api_requests, 'r') as f:
+        l_requests = yaml.load(f)
+        for api_request in l_requests:
+            if api_request['DAILY_SCRAPE']:
+                print('Running the current request:')
+                pprint.pprint(api_request, indent=2)
+                ignore_keys = api_request['IGNORE_KEYS'] if 'IGNORE_KEYS' in api_request else set()
+                general_scraper(api_request['API_ENDPOINT'],
+                                api_request['DATA_NAME'],
+                                api_request['PRIMARY_KEYS'],
+                                ignore_keys)
+
 class NBAResponse():
     """
     Represents a json response from stats.nba.com.
