@@ -18,6 +18,7 @@ import yaml
 import itertools
 import time
 import pprint
+import datetime
 
 from typing import Dict, List
 
@@ -83,28 +84,32 @@ class FillableAPIRequest():
 
         DATE_FROM_KEY = 'DateFrom'
 
-        def __init__(self, api_request: str):
+        def __init__(self, api_request: str, fillable_mapping: dict):
             self._api_request = api_request
+            self.fillable_mapping = fillable_mapping
 
         def format_without_date_from(self):
             url_parse_components = list(urllib.parse.urlparse(self._api_request))
-            query_params = urllib.parse.parse_qs(url_parse_components[4])
+            query_params = urllib.parse.parse_qs(url_parse_components[4], keep_blank_values=True)
             if FillableAPIRequest.APIRequest.DATE_FROM_KEY in query_params:
-                del query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY]
+                query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = ''
 
-            query_params = urllib.parse.urlencode(query_params)
+            query_params = urllib.parse.urlencode(query_params, doseq=True)
             url_parse_components[4] = query_params
             return urllib.parse.urlunparse(url_parse_components)
 
 
         def format_with_date_from(self, date_from):
             url_parse_components = list(urllib.parse.urlparse(self._api_request))
-            query_params = urllib.parse.parse_qs(url_parse_components[4])
+            query_params = urllib.parse.parse_qs(url_parse_components[4], keep_blank_values=True)
             query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
 
-            query_params = urllib.parse.urlencode(query_params)
+            query_params = urllib.parse.urlencode(query_params, doseq=True)
             url_parse_components[4] = query_params
             return urllib.parse.urlunparse(url_parse_components)
+
+        def __str__(self):
+            return self._api_request
 
 
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
@@ -118,24 +123,34 @@ class FillableAPIRequest():
         self._fillable_names = []
         self._parse_fillable_api_request(primary_keys)
 
+
     def generate_api_requests(self):
         """
         Yields APIRequest objects that are generated
         by creating every combination of fillable choices.
         """
-        pass
-
-    def generate_cross_product_choices(self):
         for fillable_permutation in itertools.product(*self._fillable_choices):
-            d = OrderedDict()
+            fill_mapping = OrderedDict()
             for fillable_type, fillable_value in zip(self._fillable_names, flatten_list(fillable_permutation)):
-                d[fillable_type] = fillable_value
-            yield d
+                fill_mapping[fillable_type] = fillable_value
+            yield FillableAPIRequest.APIRequest(self.fill_in(**fill_mapping), fill_mapping)
 
-    def format(self, **kwargs):
+
+    def fill_in(self, **kwargs):
         return self.fillable_api_request.format(**kwargs)
 
+
+    def __str__(self):
+        return 'API Request: {}\n\t with fillable values: {}'.format(self.fillable_api_request, self._fillable_names)
+
+
     def _parse_fillable_api_request(self, primary_keys: List[str]):
+        """
+        Parses a fillable api request string by looking for
+        specific keywords in the string such as '{SEASON}'
+        which denotes that the job should scrape for all
+        seasons.
+        """
         if '{SEASON}' in self.fillable_api_request:
             self._fillable_names.append('SEASON')
 
@@ -173,9 +188,6 @@ class FillableAPIRequest():
             except ValueError:
                 raise ValueError('API request had {PLAYER_ID} without a specified season or {SEASON}.')
 
-    def __str__(self):
-        return 'API Request: {}\n\t with fillable values: {}'.format(self.fillable_api_request, self._fillable_names)
-
 
     def _get_fillable_values(self, fillable_type):
         if fillable_type not in FillableAPIRequest.fillable_values:
@@ -193,27 +205,22 @@ class FillableAPIRequest():
             return FillableAPIRequest.fillable_values[fillable_type]
 
 
-def minimize_api_scrape(api_request):
+def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
     """
     Adds or updates the "DateFrom" api query parameter
     based on the last time this api_request was made.
     """
-    if db.request_logger.already_scraped(api_request):
-        date_str = db.request_logger.get_last_scraped(api_request)
-        DATE_FORMAT = 'YYYY-MM-DD'
-        date_str = date_str[:len(DATE_FORMAT)]
-        DATE_FROM_QUERY_PARAM = 'DateFrom='
-        query_i = api_request.find(DATE_FROM_QUERY_PARAM)
-        if query_i != -1:
-            api_request = '{}{}{}'.format(api_request[:query_i + len(DATE_FROM_QUERY_PARAM)],
-                                            date_str,
-                                          api_request[query_i + len(DATE_FROM_QUERY_PARAM):])
-        else:
-            api_request = '{}{}{}'.format(api_request,
-                                          DATE_FROM_QUERY_PARAM,
-                                          date_str)
+    api_request_without_datefrom = api_request.format_without_date_from()
 
-    return api_request
+    if db.request_logger.already_scraped(api_request_without_datefrom):
+        date_str = db.request_logger.get_last_scraped(api_request)
+        DATE_EXAMPLE = 'YYYY-MM-DD'
+        date_str = date_str[:len(DATE_EXAMPLE)]
+        DATE_FORMAT = '%Y-%m-%d'
+        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
+        return api_request.format_with_date_from(date_from)
+    else:
+        return api_request_without_datefrom
 
 
 
@@ -227,13 +234,12 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     for all seasons defined in the scraper_config.yaml file.
 
     Supported fillables include:
-
+    - season
+    - player_id
 
     To be supported fillables include:
-    - season
     - to_date (in which case, a season will have to be fillable)
     - position
-    - player_id
     - team_id
     """
     KEYS_TO_ADD_COLS = {'SEASON', 'GAME_DATE'}
@@ -241,28 +247,33 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
     print(fillable_api_request)
 
-    for fillable_choice in fillable_api_request.generate_cross_product_choices():
-        api_request = fillable_api_request.format(**fillable_choice)
+    for api_request in fillable_api_request.generate_api_requests():
+        fillable_mapping = api_request.fillable_mapping
+
         if SCRAPER_CONFIG.MINIMIZE_SCRAPES:
-            api_request = minimize_api_scrape(api_request)
+            api_request_str = minimize_api_scrape(api_request)
         else:
             if db.request_logger.already_scraped(api_request):
                 print('Skipping api_request: {}\n because it has already been scraped.'.format(fillable_api_request))
                 continue
+            else:
+                api_request_str = api_request.format_without_date_from()
 
         if SCRAPER_CONFIG.VERBOSE:
-            print('Scraping: {}'.format(fillable_choice))
+            print('Scraping: {}'.format(fillable_mapping))
             print(api_request)
 
-        nba_response = scrape(api_request)
-        db.request_logger.log_request(api_request)
+        nba_response = scrape(api_request_str)
         for key in primary_keys:
             if key not in nba_response.headers:
                 if key in KEYS_TO_ADD_COLS:
-                    nba_response.add_col(key, fillable_choice[key])
+                    nba_response.add_col(key, fillable_mapping[key])
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
+
+        # log after it has been stored
+        db.request_logger.log_request(api_request.format_without_date_from())
 
 
 def scrape(api_request):
