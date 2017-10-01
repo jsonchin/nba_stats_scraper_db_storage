@@ -2,7 +2,8 @@
 
 A tool to scrape stats.nba.com with customizable api requests and to store the json responses into a database for easier queries.
 
-This tool is meant for personal use but anyone interested in nba statistics or data science should feel free to use it! It's still a work in progress (I'm currently rewriting some of my old code that I used a for my old data pipeline) and should be done before October when the NBA season starts.
+I'm still adding features to this tool (cleaner support for more dynamic api requests, automatic updating of data by daily scraping, etc) but the base features of a data format to automatically scrape for all combinations of query parameters for an api request and database storage are finished.
+
 
 ## Motivation
 
@@ -16,7 +17,7 @@ http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID=&Season=&SeasonTyp
 
 but with the `PlayerId` and `Season` query parameters filled in with different values. There's about 400 player ids and let's say 6 seasons that we care about. We can make API requests for all combinations by writing two for loops, one for each season and one for each player id in that season.
 
-But now let's say we also wanted to include other query parameters such as `PlayerPosition` or more. Ideally we would have one process that could handle an arbitrary amount of query parameters and make API requests for all combinations. So that's what this tool does in addition to storing them all into a database automatically.
+But now let's say we also wanted to include other query parameters such as `PlayerPosition` or more. Ideally we would have one process or data format that could handle an arbitrary amount of query parameters and make API requests for all combinations. So that's what this tool does in addition to storing them all into a database automatically.
 
 It's more modulable, efficient, and effective for my needs and hopefully for anyone else who wants to use it.
 
