@@ -342,13 +342,13 @@ def format_str_to_nba_response_header(s: str):
     format with the exception of Player_ID and Game_ID.
 
     >>> format_str_to_nba_response_header('game_date')
-    GAME_DATE
+    'GAME_DATE'
     >>> format_str_to_nba_response_header('player_id')
-    Player_ID
+    'Player_ID'
     >>> format_str_to_nba_response_header('GAME_ID')
-    Game_ID
+    'Game_ID'
     >>> format_str_to_nba_response_header('Season')
-    SEASON
+    'SEASON'
     """
     s = s.upper()
     if s == 'PLAYER_ID':
