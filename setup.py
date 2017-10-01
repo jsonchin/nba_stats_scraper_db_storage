@@ -1,4 +1,6 @@
 from setuptools import setup
+import db.initialize
+import scrape.scraper
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -14,10 +16,6 @@ setup(
     install_requires=required
 )
 
-import db.initialize
 
 db.initialize.init_db()
-
-import scrape.scraper
-
 scrape.scraper.run_scrape_jobs('scrape/api_requests_init.yaml')
