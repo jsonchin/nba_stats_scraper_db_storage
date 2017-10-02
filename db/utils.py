@@ -14,6 +14,7 @@ def execute_sql(sql, params=()):
     close_db_connection(con)
     return results
 
+
 def execute_many_sql(sql, seq_of_params):
     """
     Executes a sql statement for a batch of values.
@@ -28,6 +29,7 @@ def execute_many_sql(sql, seq_of_params):
 def get_db_connection():
     con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
     return con
+
 
 def close_db_connection(con):
     con.commit()
