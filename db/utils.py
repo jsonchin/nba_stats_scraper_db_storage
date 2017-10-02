@@ -8,20 +8,29 @@ def execute_sql(sql, params=()):
     params is a list of values that will be used
     in place of question marks in the sql statement.
     """
-    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
+    con = get_db_connection()
     cur = con.execute(sql, params)
-    con.commit()
     results = cur.fetchall()
-    con.close()
+    close_db_connection(con)
     return results
+
 
 def execute_many_sql(sql, seq_of_params):
     """
     Executes a sql statement for a batch of values.
     """
-    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
+    con = get_db_connection()
     cur = con.executemany(sql, seq_of_params)
-    con.commit()
     results = cur.fetchall()
-    con.close()
+    close_db_connection(con)
     return results
+
+
+def get_db_connection():
+    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
+    return con
+
+
+def close_db_connection(con):
+    con.commit()
+    con.close()
