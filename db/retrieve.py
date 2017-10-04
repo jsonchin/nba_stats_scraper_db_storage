@@ -54,3 +54,15 @@ def exists_table(table_name: str):
         return True
     except:
         return False
+
+
+def get_table_names(only_data=True):
+    """
+    Returns a list of table names in the database.
+    If only_data is False, then all table names are returned
+    including tables such as scrape_log and player_ids.
+    """
+    EXCLUDE_TABLES = {'scrape_log', 'player_ids'}
+    table_names = [l[0] for l in db.utils.execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""")
+                   if (not only_data or l[0] not in EXCLUDE_TABLES)]
+    return table_names
