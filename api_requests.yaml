@@ -11,6 +11,7 @@
   API_ENDPOINT: 'http://stats.nba.com/stats/playergamelog?LeagueID=00&PlayerID={PLAYER_ID}&Season={SEASON}&SeasonType=Regular+Season'
   PRIMARY_KEYS:
     - 'PLAYER_ID'
+    - 'GAME_DATE'
     - 'SEASON'
   DAILY_SCRAPE: True
 
@@ -19,6 +20,7 @@
   API_ENDPOINT: 'http://stats.nba.com/stats/playergamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
   PRIMARY_KEYS:
     - 'PLAYER_ID'
+    - 'GAME_DATE'
     - 'SEASON'
   DAILY_SCRAPE: True
 
@@ -27,6 +29,7 @@
   API_ENDPOINT: 'http://stats.nba.com/stats/playergamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Usage&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
   PRIMARY_KEYS:
     - 'PLAYER_ID'
+    - 'GAME_DATE'
     - 'SEASON'
   DAILY_SCRAPE: True
 
@@ -35,6 +38,7 @@
   API_ENDPOINT: 'http://stats.nba.com/stats/teamgamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Four+Factors&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
   PRIMARY_KEYS:
     - 'PLAYER_ID'
+    - 'GAME_DATE'
     - 'SEASON'
   DAILY_SCRAPE: True
 

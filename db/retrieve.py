@@ -36,6 +36,21 @@ def fetch_game_dates():
     return game_ids_by_season
 
 
+def aggregate_data():
+    """
+    Aggregates all of the data in the database into rows by
+    GAME_DATE, SEASON, and PLAYER_ID
+    """
+    # TODO implement dynamically
+
+
+def retrieve_player_logs():
+    """
+    Utility function to fetch player_logs as a pandas df.
+    """
+    return db_query("""SELECT * FROM player_logs ORDER BY PLAYER_ID, GAME_DATE, SEASON;""")
+
+
 def db_query(sql_query: str):
     """
     Returns a pandas dataframe corresponding to the result of
