@@ -73,10 +73,10 @@ class TestDBStorage(unittest.TestCase):
         """
         Tests that db.utils.execute_sql returns both column names
         and rows.
-        :return:
         """
         query_result = db.utils.execute_sql("""SELECT * FROM player_ids LIMIT 1;""")
-        self.assertEqual(len(query_result), 2)
+        self.assertEqual(query_result.column_names, ['PLAYER_ID', 'PLAYER_NAME', 'SEASON'])
+        self.assertEqual(type(query_result.rows), list)
 
 
     def test_db_query(self):

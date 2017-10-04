@@ -2,30 +2,41 @@ import sqlite3
 import db.config as DB_CONFIG
 
 
+class DB_Query():
+
+    def __init__(self, column_names, rows):
+        self.column_names = column_names
+        self.rows = rows
+
+
 def execute_sql(sql, params=()):
     """
     Executes a sql query and commits the result.
     params is a list of values that will be used
     in place of question marks in the sql statement.
+
+    Returns a DB_Query.
     """
     con = get_db_connection()
     cur = con.execute(sql, params)
     results = cur.fetchall()
     column_names = [description[0] for description in cur.description] if cur.description is not None else None
     close_db_connection(con)
-    return column_names, results
+    return DB_Query(column_names, results)
 
 
 def execute_many_sql(sql, seq_of_params):
     """
     Executes a sql statement for a batch of values.
+
+    Returns a DB_Query.
     """
     con = get_db_connection()
     cur = con.executemany(sql, seq_of_params)
     results = cur.fetchall()
     column_names = [description[0] for description in cur.description] if cur.description is not None else None
     close_db_connection(con)
-    return column_names, results
+    return DB_Query(column_names, results)
 
 
 def get_table_column_names(table_name: str):
