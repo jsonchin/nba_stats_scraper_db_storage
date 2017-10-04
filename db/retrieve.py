@@ -15,7 +15,7 @@ def fetch_player_ids():
     Returns a mapping of season to a list of player_ids.
     """
     player_ids_by_season = defaultdict(list)
-    season_player_id_tuples = db.utils.execute_sql("""SELECT SEASON, PLAYER_ID FROM player_ids;""")
+    season_player_id_tuples = db.utils.execute_sql("""SELECT SEASON, PLAYER_ID FROM player_ids;""")[1]
 
     for season, player_id in season_player_id_tuples:
         player_ids_by_season[season].append(player_id)
@@ -28,7 +28,7 @@ def fetch_game_dates():
     Returns a mapping of season to a list of game dates.
     """
     game_ids_by_season = defaultdict(list)
-    season_game_date_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_DATE FROM game_dates;""")
+    season_game_date_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_DATE FROM game_dates;""")[1]
 
     for season, game_date in season_game_date_tuples:
         game_ids_by_season[season].append(game_date)
@@ -41,7 +41,8 @@ def db_query(sql_query: str):
     Returns a pandas dataframe corresponding to the result of
     executing the sql_query.
     """
-    # TODO: implement this
+    column_names, rows = db.utils.execute_sql(sql_query)
+    return pd.DataFrame(data=rows, columns=column_names)
 
 
 def exists_table(table_name: str):
@@ -63,6 +64,6 @@ def get_table_names(only_data=True):
     including tables such as scrape_log and player_ids.
     """
     EXCLUDE_TABLES = {'scrape_log', 'player_ids'}
-    table_names = [l[0] for l in db.utils.execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""")
+    table_names = [l[0] for l in db.utils.execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""")[1]
                    if (not only_data or l[0] not in EXCLUDE_TABLES)]
     return table_names

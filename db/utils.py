@@ -11,8 +11,9 @@ def execute_sql(sql, params=()):
     con = get_db_connection()
     cur = con.execute(sql, params)
     results = cur.fetchall()
+    column_names = [description[0] for description in cur.description] if cur.description is not None else None
     close_db_connection(con)
-    return results
+    return column_names, results
 
 
 def execute_many_sql(sql, seq_of_params):
@@ -22,8 +23,22 @@ def execute_many_sql(sql, seq_of_params):
     con = get_db_connection()
     cur = con.executemany(sql, seq_of_params)
     results = cur.fetchall()
+    column_names = [description[0] for description in cur.description] if cur.description is not None else None
     close_db_connection(con)
-    return results
+    return column_names, results
+
+
+def get_table_column_names(table_name: str):
+    """
+    Returns a list of column names of the specified table.
+
+    This function is in this module because it deals with
+    the cursor and connection abstractipn layer.
+    """
+    con = get_db_connection()
+    cur = con.execute("""SELECT * FROM {} LIMIT 1;""".format(table_name))
+    column_names = [description[0] for description in cur.description]
+    return column_names
 
 
 def get_db_connection():

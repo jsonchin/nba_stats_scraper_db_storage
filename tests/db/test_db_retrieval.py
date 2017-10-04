@@ -4,6 +4,7 @@ config.DB_NAME = 'test_db'
 config.DB_PATH = 'tests/db/databases'
 
 import db.retrieve
+import db.utils
 
 from collections import defaultdict
 
@@ -21,6 +22,7 @@ class TestDBStorage(unittest.TestCase):
     def setUp(cls):
         pass
 
+
     def test_fetch_player_ids(self):
         """
         Tests that fetch_player_ids returns a dictionary
@@ -32,6 +34,7 @@ class TestDBStorage(unittest.TestCase):
 
         SEASON_LENGTH = len('2017-18')
         self.assertTrue(all([len(key) == SEASON_LENGTH for key in d.keys()]))
+
 
     def test_get_table_names(self):
         """
@@ -49,3 +52,21 @@ class TestDBStorage(unittest.TestCase):
         table_names = db.retrieve.get_table_names(only_data=False)
         self.assertTrue('scrape_log' in table_names)
         self.assertTrue('player_ids' in table_names)
+
+
+    def test_get_column_names(self):
+        """
+        Tests that get_column names returns a list of strings
+        and that the column names are correct and in the correct
+        order..
+        """
+        column_names = db.utils.get_table_column_names('player_ids')
+        self.assertTrue(all((type(ele) == str for ele in column_names)))
+        self.assertTrue(len(column_names) == 3)
+        self.assertTrue(column_names[0] == 'PLAYER_ID')
+        self.assertTrue(column_names[1] == 'PLAYER_NAME')
+        self.assertTrue(column_names[2] == 'SEASON')
+
+    def test_db_utils_execute_sql(self):
+        query_result = db.utils.execute_sql("""SELECT * FROM player_ids LIMIT 1;""")
+        self.assertTrue(len(query_result) == 2)
