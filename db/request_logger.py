@@ -17,7 +17,7 @@ def already_scraped(api_request):
     exists within the table "scrape_log.
     """
     api_request_log = db.utils.execute_sql("""SELECT * FROM scrape_log WHERE api_request = ? LIMIT 1;""", (api_request, ))
-    return len(api_request_log) != 0
+    return len(api_request_log.rows) != 0
 
 
 def get_last_scraped(api_request):
@@ -27,4 +27,4 @@ def get_last_scraped(api_request):
     exists within the table "scrape_log.
     """
     api_request_date_query = db.utils.execute_sql("""SELECT MAX(date) FROM scrape_log WHERE api_request = ?;""", (api_request, ))
-    return api_request_date_query[0][0]
+    return api_request_date_query.rows[0][0]

@@ -27,6 +27,6 @@ class TestScraper(unittest.TestCase):
         db.request_logger.log_request('api_request')
 
     def test_already_scraped(self):
-        api_request_query = db.utils.execute_sql("""SELECT api_request FROM scrape_log LIMIT 1;""")
+        api_request_query = db.utils.execute_sql("""SELECT api_request FROM scrape_log LIMIT 1;""").rows
         api_request = api_request_query[0][0]
         self.assertTrue(db.request_logger.already_scraped(api_request), 'Should have been scraped.')
