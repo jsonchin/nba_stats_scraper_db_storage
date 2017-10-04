@@ -28,6 +28,12 @@ class TestDBStorage(unittest.TestCase):
         db.initialize.init_db()
         self.assertTrue(db.retrieve.exists_table('scrape_log'), 'Table \'scrape_log\' should exist.')
 
+
     def test_exists_db(self):
+        """
+        Tests that db.retrieve.exists_table properly
+        detects if a table exists or not.
+        """
         self.assertFalse(db.retrieve.exists_table('TABLE_NAME_THAT_DOES_NOT_EXIST'),
                          'Table should not exist.')
+        self.assertTrue(db.retrieve.exists_table('player_ids'))
