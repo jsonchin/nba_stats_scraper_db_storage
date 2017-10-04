@@ -5,6 +5,7 @@ config.DB_PATH = 'tests/db/databases'
 
 import db.retrieve
 import db.utils
+import pandas as pd
 
 from collections import defaultdict
 
@@ -62,11 +63,27 @@ class TestDBStorage(unittest.TestCase):
         """
         column_names = db.utils.get_table_column_names('player_ids')
         self.assertTrue(all((type(ele) == str for ele in column_names)))
-        self.assertTrue(len(column_names) == 3)
-        self.assertTrue(column_names[0] == 'PLAYER_ID')
-        self.assertTrue(column_names[1] == 'PLAYER_NAME')
-        self.assertTrue(column_names[2] == 'SEASON')
+        self.assertEqual(len(column_names), 3)
+        self.assertEqual(column_names[0], 'PLAYER_ID')
+        self.assertEqual(column_names[1], 'PLAYER_NAME')
+        self.assertEqual(column_names[2], 'SEASON')
+
 
     def test_db_utils_execute_sql(self):
+        """
+        Tests that db.utils.execute_sql returns both column names
+        and rows.
+        :return:
+        """
         query_result = db.utils.execute_sql("""SELECT * FROM player_ids LIMIT 1;""")
-        self.assertTrue(len(query_result) == 2)
+        self.assertEqual(len(query_result), 2)
+
+
+    def test_db_query(self):
+        """
+        Tests that db_query returns a Pandas DataFrame
+        with appropriate column names.
+        """
+        df = db.retrieve.db_query("""SELECT * FROM player_ids;""")
+        self.assertEqual(type(df), pd.DataFrame)
+        self.assertEquals(list(df.columns.values), ['PLAYER_ID', 'PLAYER_NAME', 'SEASON'])
