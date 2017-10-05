@@ -69,6 +69,19 @@ class NBAResponse():
         try:
             self._headers = NBAResponse.headers_access(json_response)
             self._rows = NBAResponse.row_set_access(json_response)
+
+            # TODO: if GAME_DATE in headers, check and make sure its data is in YYYY/MM/DD format
+            # Other choice of the date format given in a response is OCT 29, 2016
+            if 'GAME_DATE' in self.headers:
+                i = self.headers.index('GAME_DATE')
+                example_date = self.rows[0][i]
+                # TODO implement the two functions below
+                is_proper_date_format = lambda x: True
+                format_date = lambda x: x
+                if not is_proper_date_format(example_date):
+                    for r in range(len(self.rows)):
+                        self.rows[r][i] = format_date(self.rows[r][i])
+
         except ValueError:
             raise ValueError('Unexpected JSON formatting of headers and rows.')
 
