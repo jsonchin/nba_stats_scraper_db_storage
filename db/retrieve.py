@@ -43,6 +43,15 @@ def aggregate_data():
     """
     # TODO implement dynamically
 
+def aggregate_daily_data(season='2017-18'):
+    return db_query("""
+        SELECT * FROM player_logs
+            WHERE SEASON = {season} AND GAME_DATE =
+                (SELECT MAX(inner_player_logs.GAME_DATE)
+                    FROM player_logs AS inner_player_logs
+                    WHERE inner_player_logs.SEASON = {season} AND inner_player_logs.PLAYER_ID = player_logs.PLAYER_ID
+                    GROUP BY inner_player_logs.PLAYER_ID);""".format(season=season))
+
 
 def retrieve_player_logs():
     """
