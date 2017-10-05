@@ -46,11 +46,11 @@ def aggregate_data():
 def aggregate_daily_data(season='2017-18'):
     return db_query("""
         SELECT * FROM player_logs
-            WHERE SEASON = {season} AND GAME_DATE =
+            WHERE SEASON = ? AND GAME_DATE =
                 (SELECT MAX(inner_player_logs.GAME_DATE)
                     FROM player_logs AS inner_player_logs
-                    WHERE inner_player_logs.SEASON = {season} AND inner_player_logs.PLAYER_ID = player_logs.PLAYER_ID
-                    GROUP BY inner_player_logs.PLAYER_ID);""".format(season=season))
+                    WHERE inner_player_logs.SEASON = ? AND inner_player_logs.PLAYER_ID = player_logs.PLAYER_ID
+                    GROUP BY inner_player_logs.PLAYER_ID);""", (season, season))
 
 
 def retrieve_player_logs():
@@ -60,12 +60,12 @@ def retrieve_player_logs():
     return db_query("""SELECT * FROM player_logs ORDER BY PLAYER_ID, GAME_DATE, SEASON;""")
 
 
-def db_query(sql_query: str):
+def db_query(sql_query: str, params=()):
     """
     Returns a pandas dataframe corresponding to the result of
     executing the sql_query.
     """
-    db_query_result = db.utils.execute_sql(sql_query)
+    db_query_result = db.utils.execute_sql(sql_query, params=params)
     return pd.DataFrame(data=db_query_result.rows, columns=db_query_result.column_names)
 
 
