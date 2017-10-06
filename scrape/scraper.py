@@ -19,6 +19,7 @@ import itertools
 import time
 import pprint
 import datetime
+from scrape.utils import *
 
 from typing import Dict, List
 
@@ -70,14 +71,10 @@ class NBAResponse():
             self._headers = NBAResponse.headers_access(json_response)
             self._rows = NBAResponse.row_set_access(json_response)
 
-            # TODO: if GAME_DATE in headers, check and make sure its data is in YYYY/MM/DD format
             # Other choice of the date format given in a response is OCT 29, 2016
             if 'GAME_DATE' in self.headers:
                 i = self.headers.index('GAME_DATE')
                 example_date = self.rows[0][i]
-                # TODO implement the two functions below
-                is_proper_date_format = lambda x: True
-                format_date = lambda x: x
                 if not is_proper_date_format(example_date):
                     for r in range(len(self.rows)):
                         self.rows[r][i] = format_date(self.rows[r][i])
@@ -339,45 +336,3 @@ def scrape(api_request):
             print('Sleeping on {} for {} seconds.'.format(api_request, SCRAPER_CONFIG.SLEEP_TIME))
         try_count -= 1
     raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
-
-
-def format_nba_query_param(s: str):
-    """
-    stats.nba request query parameters are in UpperCamelCase
-    format with the exception of Id which is ID.
-    """
-    return ''.join([w.title() if w.lower() != 'id' else 'ID' for w in s.split('_')])
-
-
-def format_str_to_nba_response_header(s: str):
-    """
-    stats.nba response columns are in ANGRY_SNAKE_CASE
-    format with the exception of Player_ID and Game_ID.
-
-    >>> format_str_to_nba_response_header('game_date')
-    'GAME_DATE'
-    >>> format_str_to_nba_response_header('player_id')
-    'Player_ID'
-    >>> format_str_to_nba_response_header('GAME_ID')
-    'Game_ID'
-    >>> format_str_to_nba_response_header('Season')
-    'SEASON'
-    """
-    s = s.upper()
-    if s == 'PLAYER_ID':
-        s = 'Player_ID'
-    elif s == 'GAME_ID':
-        s = 'Game_ID'
-    return s
-
-def flatten_list(l):
-    """
-    Flattens a list one level.
-    """
-    flattened_l = []
-    for ele in l:
-        if type(ele) == list or type(ele) == tuple:
-            flattened_l.extend(ele)
-        else:
-            flattened_l.append(ele)
-    return flattened_l
