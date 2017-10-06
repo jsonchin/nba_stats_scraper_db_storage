@@ -43,6 +43,7 @@ def aggregate_data():
     """
     # TODO implement dynamically
 
+
 def aggregate_daily_data(season='2017-18'):
     return db_query("""
         SELECT * FROM player_logs
