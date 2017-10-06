@@ -70,14 +70,10 @@ class NBAResponse():
             self._headers = NBAResponse.headers_access(json_response)
             self._rows = NBAResponse.row_set_access(json_response)
 
-            # TODO: if GAME_DATE in headers, check and make sure its data is in YYYY/MM/DD format
             # Other choice of the date format given in a response is OCT 29, 2016
             if 'GAME_DATE' in self.headers:
                 i = self.headers.index('GAME_DATE')
                 example_date = self.rows[0][i]
-                # TODO implement the two functions below
-                is_proper_date_format = lambda x: True
-                format_date = lambda x: x
                 if not is_proper_date_format(example_date):
                     for r in range(len(self.rows)):
                         self.rows[r][i] = format_date(self.rows[r][i])
@@ -369,6 +365,59 @@ def format_str_to_nba_response_header(s: str):
     elif s == 'GAME_ID':
         s = 'Game_ID'
     return s
+
+
+PROPER_DATE_FORMAT = '%Y-%m-%d'
+def is_proper_date_format(date_str):
+    """
+    Returns True if date_str is in YYYY-MM-DD format.
+
+    >>> is_proper_date_format('2016-10-29')
+    True
+    >>> is_proper_date_format('OCT 29, 2016')
+    False
+    >>> is_proper_date_format('2016-10-29T000001')
+    False
+    """
+    try:
+        datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
+        return True
+    except:
+        return False
+
+
+def format_date(date_str):
+    """
+    Formats the date_str into YYYY-MM-DD format.
+
+    Throws an exception if the date format was unsupported
+
+    Add translations as they show up:
+    Currently supported:
+    OCT 29, 2016
+    YYYY-MM-DD[extra_chars]
+
+    >>> format_date('OCT 29, 2016')
+    '2016-10-29'
+    >>> format_date('2016-10-29T000001')
+    '2016-10-29'
+
+    """
+    # OCT 29, 2016
+    try:
+        return datetime.datetime.strftime(
+            datetime.datetime.strptime(date_str, '%b %d, %Y'),
+            PROPER_DATE_FORMAT
+        )
+    except:
+        pass
+
+    # YYYY-MM-DD[extra_chars]
+    return datetime.datetime.strftime(
+        datetime.datetime.strptime(date_str[:len('2016-10-29')], PROPER_DATE_FORMAT),
+        PROPER_DATE_FORMAT
+    )
+
 
 def flatten_list(l):
     """
