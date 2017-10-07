@@ -83,7 +83,6 @@ class NBAResponse():
                     row = self.rows[r]
                     self.rows[r] = [row[i] for i in range(len(row)) if i not in indicies_to_remove]
 
-
             # Other choice of the date format given in a response is OCT 29, 2016
             if 'GAME_DATE' in self.headers:
                 i = self.headers.index('GAME_DATE')
@@ -132,7 +131,7 @@ class FillableAPIRequest():
 
             self.url_parse_components = list(urllib.parse.urlparse(api_request))
             unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
-            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
+            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x: x[0]))
 
         def get_season(self):
             return self.get_query_param('Season')
