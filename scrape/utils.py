@@ -11,24 +11,21 @@ def format_nba_query_param(s: str):
 
 def format_str_to_nba_response_header(s: str):
     """
-    stats.nba response columns are in ANGRY_SNAKE_CASE
-    format with the exception of Player_ID and Game_ID.
+    Formats a string into NBA response column header format.
+
+    stats.nba response columns are made into ANGRY_SNAKE_CASE
+    format when they are parsed from json.
 
     >>> format_str_to_nba_response_header('game_date')
     'GAME_DATE'
     >>> format_str_to_nba_response_header('player_id')
-    'Player_ID'
+    'PLAYER_ID'
     >>> format_str_to_nba_response_header('GAME_ID')
-    'Game_ID'
+    'GAME_ID'
     >>> format_str_to_nba_response_header('Season')
     'SEASON'
     """
-    s = s.upper()
-    if s == 'PLAYER_ID':
-        s = 'Player_ID'
-    elif s == 'GAME_ID':
-        s = 'Game_ID'
-    return s
+    return s.upper()
 
 
 PROPER_DATE_FORMAT = '%Y-%m-%d'

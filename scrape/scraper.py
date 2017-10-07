@@ -68,7 +68,7 @@ class NBAResponse():
     def __init__(self, json_response: Dict):
         # corresponding to how NBA json responses are formatted
         try:
-            self._headers = NBAResponse.headers_access(json_response)
+            self._headers = [header.upper() for header in NBAResponse.headers_access(json_response)]
             self._rows = NBAResponse.row_set_access(json_response)
 
             # Other choice of the date format given in a response is OCT 29, 2016
