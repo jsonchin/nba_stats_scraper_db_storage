@@ -28,7 +28,7 @@
 - DATA_NAME: 'team_logs_four_factors'
   API_ENDPOINT: 'http://stats.nba.com/stats/teamgamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Four+Factors&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
   PRIMARY_KEYS:
-    - 'PLAYER_ID'
+    - 'TEAM_ID'
     - 'GAME_DATE'
     - 'SEASON'
   DAILY_SCRAPE: True

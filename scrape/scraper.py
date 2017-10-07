@@ -18,7 +18,6 @@ import yaml
 import itertools
 import time
 import pprint
-import datetime
 from scrape.utils import *
 
 from typing import Dict, List
@@ -36,9 +35,9 @@ def run_scrape_jobs(path_to_api_requests: str):
             pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
-                                    api_request['DATA_NAME'],
-                                    api_request['PRIMARY_KEYS'],
-                                    ignore_keys)
+                                api_request['DATA_NAME'],
+                                api_request['PRIMARY_KEYS'],
+                                ignore_keys)
 
 def run_daily_scrapes(path_to_api_requests: str):
     """
@@ -71,6 +70,18 @@ class NBAResponse():
             self._headers = [header.upper() for header in NBAResponse.headers_access(json_response)]
             self._rows = NBAResponse.row_set_access(json_response)
 
+            indicies_to_remove = set()
+            for i in range(len(self.headers)):
+                if self.headers[i] in SCRAPER_CONFIG.GLOBAL_IGNORE_KEYS:
+                    indicies_to_remove.add(i)
+
+            if len(indicies_to_remove) > 0:
+                self._headers = [self.headers[i] for i in range(len(self.headers)) if i not in indicies_to_remove]
+
+                for r in range(len(self.rows)):
+                    row = self.rows[r]
+                    self.rows[r] = [row[i] for i in range(len(row)) if i not in indicies_to_remove]
+
             # Other choice of the date format given in a response is OCT 29, 2016
             if 'GAME_DATE' in self.headers:
                 i = self.headers.index('GAME_DATE')
@@ -98,6 +109,7 @@ class NBAResponse():
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
+
 class FillableAPIRequest():
     """
     Represents a fillable api request.
@@ -119,7 +131,7 @@ class FillableAPIRequest():
 
             self.url_parse_components = list(urllib.parse.urlparse(api_request))
             unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
-            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x:x[0]))
+            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x: x[0]))
 
         def get_season(self):
             return self.get_query_param('Season')
@@ -143,7 +155,8 @@ class FillableAPIRequest():
             return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
-            return 'API Request: {}\n with fillable values: {}'.format(self.get_api_request_str(), self.fillable_mapping)
+            return 'API Request: {}\n with fillable values: {}'.format(
+                self.get_api_request_str(), self.fillable_mapping)
 
 
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
@@ -251,11 +264,11 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         DATE_EXAMPLE = 'YYYY-MM-DD'
         date_str = date_str[:len(DATE_EXAMPLE)]
         DATE_FORMAT = '%Y-%m-%d'
-        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
+        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2))\
+                    .strftime(DATE_FORMAT)
         return api_request.get_api_request_str(date_from)
     else:
         return api_request.get_api_request_str()
-
 
 
 def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
