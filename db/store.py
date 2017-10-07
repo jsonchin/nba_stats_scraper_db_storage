@@ -75,7 +75,17 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
             bool: 'INT'
         }
 
-        return [TYPE_MAPPING[type(ele)] if ele is not None else 'INT' for ele in rows[0]]
+        unknown_type_indicies = set(range(len(headers)))
+        column_types = [None for _ in range(len(headers))]
+        r = 0
+        while len(unknown_type_indicies) > 0:
+            for i in unknown_type_indicies:
+                if rows[r][i] is not None:
+                    column_types[i] = TYPE_MAPPING[type(rows[r][i])]
+                    unknown_type_indicies.remove(i)
+            r += 1
+        return column_types
+
 
     def format_column_strs():
         """
