@@ -71,6 +71,19 @@ class NBAResponse():
             self._headers = [header.upper() for header in NBAResponse.headers_access(json_response)]
             self._rows = NBAResponse.row_set_access(json_response)
 
+            indicies_to_remove = set()
+            for i in range(len(self.headers)):
+                if self.headers[i] in SCRAPER_CONFIG.GLOBAL_IGNORE_KEYS:
+                    indicies_to_remove.add(i)
+
+            if len(indicies_to_remove) > 0:
+                self._headers = [self.headers[i] for i in range(len(self.headers)) if i not in indicies_to_remove]
+
+                for r in range(len(self.rows)):
+                    row = self.rows[r]
+                    self.rows[r] = [row[i] for i in range(len(row)) if i not in indicies_to_remove]
+
+
             # Other choice of the date format given in a response is OCT 29, 2016
             if 'GAME_DATE' in self.headers:
                 i = self.headers.index('GAME_DATE')

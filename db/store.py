@@ -74,7 +74,8 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
             float: 'FLOAT',
             bool: 'INT'
         }
-        return [TYPE_MAPPING[type(ele)] for ele in rows[0]]
+
+        return [TYPE_MAPPING[type(ele)] if ele is not None else 'INT' for ele in rows[0]]
 
     def format_column_strs():
         """
