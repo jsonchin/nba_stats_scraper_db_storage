@@ -18,7 +18,6 @@ import yaml
 import itertools
 import time
 import pprint
-import datetime
 from scrape.utils import *
 
 from typing import Dict, List
@@ -36,9 +35,9 @@ def run_scrape_jobs(path_to_api_requests: str):
             pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
-                                    api_request['DATA_NAME'],
-                                    api_request['PRIMARY_KEYS'],
-                                    ignore_keys)
+                                api_request['DATA_NAME'],
+                                api_request['PRIMARY_KEYS'],
+                                ignore_keys)
 
 def run_daily_scrapes(path_to_api_requests: str):
     """
@@ -110,6 +109,7 @@ class NBAResponse():
     def __str__(self):
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
+
 class FillableAPIRequest():
     """
     Represents a fillable api request.
@@ -155,7 +155,8 @@ class FillableAPIRequest():
             return urllib.parse.urlunparse(self.url_parse_components)
 
         def __str__(self):
-            return 'API Request: {}\n with fillable values: {}'.format(self.get_api_request_str(), self.fillable_mapping)
+            return 'API Request: {}\n with fillable values: {}'.format(
+                self.get_api_request_str(), self.fillable_mapping)
 
 
     def __init__(self, fillable_api_request: str, primary_keys: List[str]):
@@ -263,11 +264,11 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         DATE_EXAMPLE = 'YYYY-MM-DD'
         date_str = date_str[:len(DATE_EXAMPLE)]
         DATE_FORMAT = '%Y-%m-%d'
-        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2)).strftime(DATE_FORMAT)
+        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2))\
+                    .strftime(DATE_FORMAT)
         return api_request.get_api_request_str(date_from)
     else:
         return api_request.get_api_request_str()
-
 
 
 def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
