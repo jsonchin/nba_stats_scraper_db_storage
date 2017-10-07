@@ -80,10 +80,13 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
         column_types = [None for _ in range(len(headers))]
         r = 0
         while len(unknown_type_indicies) > 0:
+            indicies_to_remove = []
             for i in unknown_type_indicies:
                 if rows[r][i] is not None:
                     column_types[i] = TYPE_MAPPING[type(rows[r][i])]
-                    unknown_type_indicies.remove(i)
+                    indicies_to_remove.append(i)
+            for i in indicies_to_remove:
+                unknown_type_indicies.remove(i)
             r += 1
         return column_types
 
