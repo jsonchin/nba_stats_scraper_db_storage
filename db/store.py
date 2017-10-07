@@ -30,7 +30,7 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
         """
         try:
             desired_column_indicies = [headers.index(header) for header in desired_column_headers]
-        except:
+        except ValueError:
             raise ValueError('nba response headers are inconsistent: {} \n\n {}'.format(
                 nba_response.headers,
                 headers
@@ -54,6 +54,7 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
         add_to_table(data_name, desired_column_headers, processed_rows)
     else:
         create_table_with_data(data_name, desired_column_headers, processed_rows, primary_keys)
+
 
 def create_table_with_data(table_name: str, headers: List[str], rows: List[List], primary_keys=()):
     """
@@ -85,7 +86,6 @@ def create_table_with_data(table_name: str, headers: List[str], rows: List[List]
                     unknown_type_indicies.remove(i)
             r += 1
         return column_types
-
 
     def format_column_strs():
         """
