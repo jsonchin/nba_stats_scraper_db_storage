@@ -35,9 +35,10 @@ def run_scrape_jobs(path_to_api_requests: str):
             pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
-                                api_request['DATA_NAME'],
-                                api_request['PRIMARY_KEYS'],
-                                ignore_keys)
+                            api_request['DATA_NAME'],
+                            api_request['PRIMARY_KEYS'],
+                            ignore_keys)
+
 
 def run_daily_scrapes(path_to_api_requests: str):
     """
@@ -56,19 +57,23 @@ def run_daily_scrapes(path_to_api_requests: str):
                                 api_request['PRIMARY_KEYS'],
                                 ignore_keys)
 
+
 class NBAResponse():
     """
     Represents a json response from stats.nba.com.
     """
 
-    headers_access = lambda json: json['resultSets'][0]['headers']
-    row_set_access = lambda json: json['resultSets'][0]['rowSet']
-
     def __init__(self, json_response: Dict):
         # corresponding to how NBA json responses are formatted
+        def access_headers(json):
+            return json['resultSets'][0]['headers']
+
+        def access_row_set(json):
+            return json['resultSets'][0]['rowSet']
+
         try:
-            self._headers = [header.upper() for header in NBAResponse.headers_access(json_response)]
-            self._rows = NBAResponse.row_set_access(json_response)
+            self._headers = [header.upper() for header in access_headers(json_response)]
+            self._rows = access_row_set(json_response)
 
             indicies_to_remove = set()
             for i in range(len(self.headers)):
@@ -206,7 +211,6 @@ class FillableAPIRequest():
             for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                 if dependent_fillable in self.fillable_api_request:
                     self._fillable_names.append(dependent_fillable[1:-1])
-
 
             grouped_choices = []
             for season in self._get_fillable_values('{SEASON}'):
