@@ -169,3 +169,11 @@ api_requests.yaml:
     - 'GAME_DATE'
   DAILY_SCRAPE: True
 ```
+
+##### Utilities:
+
+```
+python3 run.py --delete {YYYY-MM-DD}
+```
+
+will clear all entries from scrape_log before the supplied date. If not date is supplied, all entries will be deleted.
