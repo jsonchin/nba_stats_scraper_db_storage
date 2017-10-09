@@ -213,12 +213,12 @@ class FillableAPIRequest():
                     self._fillable_names.append(dependent_fillable[1:-1])
 
             grouped_choices = []
-            for season in self._get_fillable_values('{SEASON}'):
+            for season in FillableAPIRequest._get_fillable_values('{SEASON}'):
                 fillable_values = []
 
                 for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                     if dependent_fillable in self.fillable_api_request:
-                        fillable_values.append(self._get_fillable_values(dependent_fillable)[season])
+                        fillable_values.append(FillableAPIRequest._get_fillable_values(dependent_fillable)[season])
 
                 for grouped_choice in itertools.product(*fillable_values):
                     grouped_choice = [season] + list(grouped_choice)
@@ -227,7 +227,7 @@ class FillableAPIRequest():
             self._fillable_choices.append(grouped_choices)
 
         elif '{PLAYER_ID}' in self.fillable_api_request:
-            player_ids_by_season = self._get_fillable_values('{PLAYER_ID}')
+            player_ids_by_season = FillableAPIRequest._get_fillable_values('{PLAYER_ID}')
             self._fillable_names.append('PLAYER_ID')
 
             # find what the season is in the api request
@@ -240,7 +240,8 @@ class FillableAPIRequest():
                 raise ValueError('API request had {PLAYER_ID} without a specified season or {SEASON}.')
 
 
-    def _get_fillable_values(self, fillable_type):
+    @staticmethod
+    def _get_fillable_values(fillable_type):
         if fillable_type not in FillableAPIRequest.fillable_values:
             if fillable_type == '{SEASON}':
                 values = SCRAPER_CONFIG.SEASONS
