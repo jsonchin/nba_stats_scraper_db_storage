@@ -142,7 +142,15 @@ Then install the packages.
 python3 setup.py install
 ```
 
-A few examples have already been provided in `api_requests.yaml` and are called in `run.py` but if you want to add more, just follow the provided format.
+and run the tool.
+
+```
+python3 run.py --scrape
+```
+
+which will run scrape on `api_requests.yaml` if no other argument (path to another yaml file) to `--scrape` is passed in.
+
+A few examples have already been provided in `api_requests.yaml` but if you want to add more, just follow the provided format.
 
 api_requests.yaml:
 ```yaml
