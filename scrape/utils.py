@@ -1,6 +1,10 @@
 import datetime
 
 
+PROPER_DATE_FORMAT = '%Y-%m-%d'
+EXAMPLE_PROPER_DATE = '2016-10-29'
+
+
 def format_nba_query_param(s: str):
     """
     stats.nba request query parameters are in UpperCamelCase
@@ -28,7 +32,6 @@ def format_str_to_nba_response_header(s: str):
     return s.upper()
 
 
-PROPER_DATE_FORMAT = '%Y-%m-%d'
 def is_proper_date_format(date_str):
     """
     Returns True if date_str is in YYYY-MM-DD format.
@@ -75,7 +78,7 @@ def format_date(date_str):
 
     # YYYY-MM-DD[extra_chars]
     return datetime.datetime.strftime(
-        datetime.datetime.strptime(date_str[:len('2016-10-29')], PROPER_DATE_FORMAT),
+        datetime.datetime.strptime(date_str[:len(EXAMPLE_PROPER_DATE)], PROPER_DATE_FORMAT),
         PROPER_DATE_FORMAT
     )
 

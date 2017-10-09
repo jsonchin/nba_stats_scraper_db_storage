@@ -261,11 +261,9 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
 
     if db.request_logger.already_scraped(api_request_without_datefrom):
         date_str = db.request_logger.get_last_scraped(api_request_without_datefrom)
-        DATE_EXAMPLE = 'YYYY-MM-DD'
-        date_str = date_str[:len(DATE_EXAMPLE)]
-        DATE_FORMAT = '%Y-%m-%d'
-        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2))\
-                    .strftime(DATE_FORMAT)
+        date_str = date_str[:len(EXAMPLE_PROPER_DATE)]
+        date_from = (datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT) - datetime.timedelta(days=2))\
+                    .strftime(PROPER_DATE_FORMAT)
         return api_request.get_api_request_str(date_from)
     else:
         return api_request.get_api_request_str()
