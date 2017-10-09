@@ -268,7 +268,7 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         date_str = db.request_logger.get_last_scraped(api_request_without_datefrom)
         date_str = date_str[:len(EXAMPLE_PROPER_DATE)]
         date_from = (datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT) - datetime.timedelta(days=2))\
-                    .strftime(PROPER_DATE_FORMAT)
+            .strftime(PROPER_DATE_FORMAT)
         return api_request.get_api_request_str(date_from)
     else:
         return api_request.get_api_request_str()
