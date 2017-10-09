@@ -1,5 +1,7 @@
 import sqlite3
 import db.config as DB_CONFIG
+import datetime
+from scrape.utils import PROPER_DATE_FORMAT
 
 
 class DB_Query():
@@ -17,6 +19,8 @@ def execute_sql(sql, params=()):
 
     Returns a DB_Query.
     """
+    if type(params) != tuple and type(params) != list:
+        params = (params, )
     con = get_db_connection()
     cur = con.execute(sql, params)
     results = cur.fetchall()
@@ -50,6 +54,24 @@ def get_table_column_names(table_name: str):
     cur = con.execute("""SELECT * FROM {} LIMIT 1;""".format(table_name))
     column_names = [description[0] for description in cur.description]
     return column_names
+
+
+def reset_scrape_logs(date=None):
+    """
+    Removes all entries from the table scrape_log
+    that come before the given date.
+
+    date must be in YYYY-MM-DD format, otherwise a ValueError
+    will be thrown.
+    """
+    if date is None:
+        execute_sql("""DELETE FROM scrape_log WHERE TRUE;""")
+    else:
+        try:
+            datetime.datetime.strptime(date, PROPER_DATE_FORMAT)
+        except ValueError:
+            raise ValueError('date was not in the correct format: YYYY-MM-DD')
+        execute_sql("""DELETE FROM scrape_log WHERE date < ?;""", date)
 
 
 def get_db_connection():

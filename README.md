@@ -142,7 +142,15 @@ Then install the packages.
 python3 setup.py install
 ```
 
-A few examples have already been provided in `api_requests.yaml` and are called in `run.py` but if you want to add more, just follow the provided format.
+and run the tool.
+
+```
+python3 run.py --scrape
+```
+
+which will run scrape on `api_requests.yaml` if no other argument (path to another yaml file) to `--scrape` is passed in.
+
+A few examples have already been provided in `api_requests.yaml` but if you want to add more, just follow the provided format.
 
 api_requests.yaml:
 ```yaml
@@ -161,3 +169,11 @@ api_requests.yaml:
     - 'GAME_DATE'
   DAILY_SCRAPE: True
 ```
+
+##### Utilities:
+
+```
+python3 run.py --delete {YYYY-MM-DD}
+```
+
+will clear all entries from scrape_log before the supplied date. If not date is supplied, all entries will be deleted.
