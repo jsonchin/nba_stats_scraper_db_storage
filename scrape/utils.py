@@ -46,7 +46,7 @@ def is_proper_date_format(date_str):
     try:
         datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
         return True
-    except:
+    except ValueError:
         return False
 
 
@@ -73,7 +73,7 @@ def format_date(date_str):
             datetime.datetime.strptime(date_str, '%b %d, %Y'),
             PROPER_DATE_FORMAT
         )
-    except:
+    except ValueError:
         pass
 
     # YYYY-MM-DD[extra_chars]
