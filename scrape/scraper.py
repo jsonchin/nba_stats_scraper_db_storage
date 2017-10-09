@@ -35,9 +35,10 @@ def run_scrape_jobs(path_to_api_requests: str):
             pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
-                                api_request['DATA_NAME'],
-                                api_request['PRIMARY_KEYS'],
-                                ignore_keys)
+                            api_request['DATA_NAME'],
+                            api_request['PRIMARY_KEYS'],
+                            ignore_keys)
+
 
 def run_daily_scrapes(path_to_api_requests: str):
     """
@@ -56,19 +57,23 @@ def run_daily_scrapes(path_to_api_requests: str):
                                 api_request['PRIMARY_KEYS'],
                                 ignore_keys)
 
+
 class NBAResponse():
     """
     Represents a json response from stats.nba.com.
     """
 
-    headers_access = lambda json: json['resultSets'][0]['headers']
-    row_set_access = lambda json: json['resultSets'][0]['rowSet']
-
     def __init__(self, json_response: Dict):
         # corresponding to how NBA json responses are formatted
+        def access_headers(json):
+            return json['resultSets'][0]['headers']
+
+        def access_row_set(json):
+            return json['resultSets'][0]['rowSet']
+
         try:
-            self._headers = [header.upper() for header in NBAResponse.headers_access(json_response)]
-            self._rows = NBAResponse.row_set_access(json_response)
+            self._headers = [header.upper() for header in access_headers(json_response)]
+            self._rows = access_row_set(json_response)
 
             indicies_to_remove = set()
             for i in range(len(self.headers)):
@@ -207,14 +212,13 @@ class FillableAPIRequest():
                 if dependent_fillable in self.fillable_api_request:
                     self._fillable_names.append(dependent_fillable[1:-1])
 
-
             grouped_choices = []
-            for season in self._get_fillable_values('{SEASON}'):
+            for season in FillableAPIRequest._get_fillable_values('{SEASON}'):
                 fillable_values = []
 
                 for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                     if dependent_fillable in self.fillable_api_request:
-                        fillable_values.append(self._get_fillable_values(dependent_fillable)[season])
+                        fillable_values.append(FillableAPIRequest._get_fillable_values(dependent_fillable)[season])
 
                 for grouped_choice in itertools.product(*fillable_values):
                     grouped_choice = [season] + list(grouped_choice)
@@ -223,7 +227,7 @@ class FillableAPIRequest():
             self._fillable_choices.append(grouped_choices)
 
         elif '{PLAYER_ID}' in self.fillable_api_request:
-            player_ids_by_season = self._get_fillable_values('{PLAYER_ID}')
+            player_ids_by_season = FillableAPIRequest._get_fillable_values('{PLAYER_ID}')
             self._fillable_names.append('PLAYER_ID')
 
             # find what the season is in the api request
@@ -236,7 +240,8 @@ class FillableAPIRequest():
                 raise ValueError('API request had {PLAYER_ID} without a specified season or {SEASON}.')
 
 
-    def _get_fillable_values(self, fillable_type):
+    @staticmethod
+    def _get_fillable_values(fillable_type):
         if fillable_type not in FillableAPIRequest.fillable_values:
             if fillable_type == '{SEASON}':
                 values = SCRAPER_CONFIG.SEASONS
@@ -261,11 +266,9 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
 
     if db.request_logger.already_scraped(api_request_without_datefrom):
         date_str = db.request_logger.get_last_scraped(api_request_without_datefrom)
-        DATE_EXAMPLE = 'YYYY-MM-DD'
-        date_str = date_str[:len(DATE_EXAMPLE)]
-        DATE_FORMAT = '%Y-%m-%d'
-        date_from = (datetime.datetime.strptime(date_str, DATE_FORMAT) - datetime.timedelta(days=2))\
-                    .strftime(DATE_FORMAT)
+        date_str = date_str[:len(EXAMPLE_PROPER_DATE)]
+        date_from = (datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT) - datetime.timedelta(days=2))\
+            .strftime(PROPER_DATE_FORMAT)
         return api_request.get_api_request_str(date_from)
     else:
         return api_request.get_api_request_str()
