@@ -56,7 +56,7 @@ def get_table_column_names(table_name: str):
     return column_names
 
 
-def reset_scrape_logs(date=None):
+def clear_scrape_logs(date=None):
     """
     Removes all entries from the table scrape_log
     that come before the given date.

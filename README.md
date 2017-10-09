@@ -173,7 +173,7 @@ api_requests.yaml:
 ##### Utilities:
 
 ```
-python3 run.py --delete {YYYY-MM-DD}
+python3 run.py --clear_log {YYYY-MM-DD}
 ```
 
 will clear all entries from scrape_log before the supplied date. If not date is supplied, all entries will be deleted.
