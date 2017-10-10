@@ -89,6 +89,6 @@ def get_table_names(only_data=True):
     including tables such as scrape_log and player_ids.
     """
     EXCLUDE_TABLES = {'scrape_log', 'player_ids'}
-    table_names = [l[0] for l in db.utils.execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""").rows
-                   if (not only_data or l[0] not in EXCLUDE_TABLES)]
+    table_names = [table_name for table_name in db.utils.get_table_names()
+                   if (not only_data or table_name not in EXCLUDE_TABLES)]
     return table_names
