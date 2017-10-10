@@ -56,7 +56,7 @@ def get_table_column_names(table_name: str):
     return column_names
 
 
-def reset_scrape_logs(date=None):
+def clear_scrape_logs(date=None):
     """
     Removes all entries from the table scrape_log
     that come before the given date.
@@ -72,6 +72,22 @@ def reset_scrape_logs(date=None):
         except ValueError:
             raise ValueError('date was not in the correct format: YYYY-MM-DD')
         execute_sql("""DELETE FROM scrape_log WHERE date < ?;""", date)
+
+
+def drop_tables():
+    """
+    Drops all tables in the database.
+    """
+    table_names = [l[0] for l in execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""").rows]
+    for table_name in table_names:
+        execute_sql("""DROP TABLE {};""".format(table_name))
+
+
+def get_table_names():
+    """
+    Returns a list of table names (list of strings).
+    """
+    return [l[0] for l in execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""").rows]
 
 
 def get_db_connection():
