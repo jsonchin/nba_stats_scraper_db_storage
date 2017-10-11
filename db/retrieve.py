@@ -54,6 +54,48 @@ def aggregate_daily_data(season='2017-18'):
                     GROUP BY inner_player_logs.PLAYER_ID);""", (season, season))
 
 
+def aggregate_training_data():
+    """
+    Aggregates training data as defined by:
+        FP, [previous_game's stats]
+    and returns a Pandas DataFrame corresponding to the query.
+    """
+    return db_query("""
+        SELECT p_log_future.PTS
+                + 1.2 * p_log_future.REB
+                + 1.5 * p_log_future.AST
+                + 3 * p_log_future.BLK
+                + 3 * p_log_future.STL
+                + -1 * p_log_future.TOV AS FP, p_log_today.*
+            FROM PLAYER_LOGS as p_log_today
+                INNER JOIN (SELECT p_log1.SEASON AS SEASON,
+                                p_log1.PLAYER_ID AS PLAYER_ID,
+                                p_log1.GAME_DATE AS PAST_GAME_DATE,
+                                p_log2.GAME_DATE AS FUTURE_GAME_DATE
+                            FROM player_logs AS p_log1,
+                                player_logs AS p_log2
+                            WHERE p_log1.SEASON = p_log2.SEASON
+                                AND p_log1.PLAYER_ID = p_log2.PLAYER_ID
+                                AND p_log2.GAME_DATE = (SELECT MIN(inner_player_logs.GAME_DATE)
+                                                FROM player_logs AS inner_player_logs
+                                                WHERE inner_player_logs.SEASON = p_log1.SEASON
+                                                    AND inner_player_logs.PLAYER_ID = p_log1.PLAYER_ID
+                                                    AND inner_player_logs.GAME_DATE > p_log1.GAME_DATE
+                                                GROUP BY inner_player_logs.PLAYER_ID))
+                        AS yesterday_date_map
+                    ON p_log_today.SEASON = yesterday_date_map.SEASON
+                        AND p_log_today.PLAYER_ID = yesterday_date_map.PLAYER_ID
+                        AND p_log_today.GAME_DATE = yesterday_date_map.PAST_GAME_DATE
+                INNER JOIN PLAYER_LOGS AS p_log_future
+                    ON p_log_future.SEASON = yesterday_date_map.SEASON
+                        AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
+                        AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
+            ORDER BY p_log_today.SEASON ASC,
+                p_log_today.PLAYER_ID,
+                p_log_today.GAME_DATE ASC;
+        """)
+
+
 def retrieve_player_logs():
     """
     Utility function to fetch player_logs as a pandas df.
