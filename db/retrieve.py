@@ -8,6 +8,7 @@ The general query function will return a pandas dataframe.
 import db.utils
 from collections import defaultdict
 import pandas as pd
+import os
 
 
 def fetch_player_ids():
@@ -61,12 +62,12 @@ def aggregate_training_data():
     and returns a Pandas DataFrame corresponding to the query.
     """
     return db_query("""
-        SELECT p_log_future.PTS
+        SELECT ROUND(p_log_future.PTS
                 + 1.2 * p_log_future.REB
                 + 1.5 * p_log_future.AST
                 + 3 * p_log_future.BLK
                 + 3 * p_log_future.STL
-                + -1 * p_log_future.TOV AS FP, p_log_today.*
+                + -1 * p_log_future.TOV, 1) AS FP, p_log_today.*
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
@@ -110,6 +111,19 @@ def db_query(sql_query: str, params=()):
     """
     db_query_result = db.utils.execute_sql(sql_query, params=params)
     return pd.DataFrame(data=db_query_result.rows, columns=db_query_result.column_names)
+
+
+def df_to_csv(df: pd.DataFrame, file_name: str):
+    """
+    Stores a pandas dataframe as a csv file with the given filename.
+    Does not store the index of the dataframe and
+    sets na (None or null values) as 0.
+    """
+    OUTPUT_PATH = 'csv_output'
+    if not os.path.isdir(OUTPUT_PATH):
+        os.makedirs(OUTPUT_PATH)
+
+    df.to_csv('{}/{}.csv'.format(OUTPUT_PATH, file_name), na_rep=0, index=False)
 
 
 def exists_table(table_name: str):
