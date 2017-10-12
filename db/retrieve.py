@@ -62,12 +62,12 @@ def aggregate_training_data():
     and returns a Pandas DataFrame corresponding to the query.
     """
     return db_query("""
-        SELECT p_log_future.PTS
+        SELECT ROUND(p_log_future.PTS
                 + 1.2 * p_log_future.REB
                 + 1.5 * p_log_future.AST
                 + 3 * p_log_future.BLK
                 + 3 * p_log_future.STL
-                + -1 * p_log_future.TOV AS FP, p_log_today.*
+                + -1 * p_log_future.TOV, 1) AS FP, p_log_today.*
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
