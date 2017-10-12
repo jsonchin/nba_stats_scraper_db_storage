@@ -8,6 +8,7 @@ The general query function will return a pandas dataframe.
 import db.utils
 from collections import defaultdict
 import pandas as pd
+import os
 
 
 def fetch_player_ids():
@@ -110,6 +111,14 @@ def db_query(sql_query: str, params=()):
     """
     db_query_result = db.utils.execute_sql(sql_query, params=params)
     return pd.DataFrame(data=db_query_result.rows, columns=db_query_result.column_names)
+
+
+def df_to_csv(df: pd.DataFrame, file_name: str):
+    OUTPUT_PATH = 'csv_output'
+    if not os.path.isdir(OUTPUT_PATH):
+        os.makedirs(OUTPUT_PATH)
+
+    df.to_csv('{}/{}.csv'.format(OUTPUT_PATH, file_name))
 
 
 def exists_table(table_name: str):
