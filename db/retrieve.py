@@ -118,7 +118,7 @@ def df_to_csv(df: pd.DataFrame, file_name: str):
     if not os.path.isdir(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
 
-    df.to_csv('{}/{}.csv'.format(OUTPUT_PATH, file_name))
+    df.to_csv('{}/{}.csv'.format(OUTPUT_PATH, file_name), na_rep=0, index=False)
 
 
 def exists_table(table_name: str):
