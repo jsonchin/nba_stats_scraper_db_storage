@@ -114,6 +114,11 @@ def db_query(sql_query: str, params=()):
 
 
 def df_to_csv(df: pd.DataFrame, file_name: str):
+    """
+    Stores a pandas dataframe as a csv file with the given filename.
+    Does not store the index of the dataframe and
+    sets na (None or null values) as 0.
+    """
     OUTPUT_PATH = 'csv_output'
     if not os.path.isdir(OUTPUT_PATH):
         os.makedirs(OUTPUT_PATH)
