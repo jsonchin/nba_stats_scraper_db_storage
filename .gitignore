@@ -113,3 +113,5 @@ cmake-build-debug/
 *.db
 db_storage/databases/*
 test/db_storage/databases/*
+
+csv_output/*.csv
