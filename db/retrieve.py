@@ -55,19 +55,27 @@ def aggregate_daily_data(season='2017-18'):
                     GROUP BY inner_player_logs.PLAYER_ID);""", (season, season))
 
 
-def aggregate_training_data():
+def aggregate_training_data(filter_fp=-10):
     """
     Aggregates training data as defined by:
         FP, [previous_game's stats]
     and returns a Pandas DataFrame corresponding to the query.
     """
+
     return db_query("""
         SELECT ROUND(p_log_future.PTS
                 + 1.2 * p_log_future.REB
                 + 1.5 * p_log_future.AST
                 + 3 * p_log_future.BLK
                 + 3 * p_log_future.STL
-                + -1 * p_log_future.TOV, 1) AS FP, p_log_today.*
+                + -1 * p_log_future.TOV, 1) AS FP_TO_PREDICT,
+                 ROUND(p_log_today.PTS
+                + 1.2 * p_log_today.REB
+                + 1.5 * p_log_today.AST
+                + 3 * p_log_today.BLK
+                + 3 * p_log_today.STL
+                + -1 * p_log_today.TOV, 1) AS FP,
+                p_log_today.*
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
@@ -91,10 +99,19 @@ def aggregate_training_data():
                     ON p_log_future.SEASON = yesterday_date_map.SEASON
                         AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
+            WHERE (SELECT AVG(
+                        p_log.PTS
+                        + 1.2 * p_log.REB
+                        + 1.5 * p_log.AST
+                        + 3 * p_log.BLK
+                        + 3 * p_log.STL
+                        + -1 * p_log.TOV) FROM player_logs AS p_log
+                    WHERE p_log.SEASON = p_log_today.SEASON
+                        AND p_log.PLAYER_ID = p_log_today.PLAYER_ID) >= ? 
             ORDER BY p_log_today.SEASON ASC,
                 p_log_today.PLAYER_ID,
                 p_log_today.GAME_DATE ASC;
-        """)
+        """, params=(filter_fp, ))
 
 
 def retrieve_player_logs():
