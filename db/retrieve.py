@@ -55,7 +55,7 @@ def aggregate_daily_data(season='2017-18'):
                     GROUP BY inner_player_logs.PLAYER_ID);""", (season, season))
 
 
-def aggregate_training_data():
+def aggregate_training_data(filter_fp=0):
     """
     Aggregates training data as defined by:
         FP, [previous_game's stats]
@@ -67,7 +67,14 @@ def aggregate_training_data():
                 + 1.5 * p_log_future.AST
                 + 3 * p_log_future.BLK
                 + 3 * p_log_future.STL
-                + -1 * p_log_future.TOV, 1) AS FP, p_log_today.*
+                + -1 * p_log_future.TOV, 1) AS FP_TO_PREDICT,
+                 ROUND(p_log_today.PTS
+                + 1.2 * p_log_today.REB
+                + 1.5 * p_log_today.AST
+                + 3 * p_log_today.BLK
+                + 3 * p_log_today.STL
+                + -1 * p_log_today.TOV, 1) AS FP,
+                p_log_today.*
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
