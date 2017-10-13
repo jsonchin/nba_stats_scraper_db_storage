@@ -6,8 +6,8 @@ import db.retrieve
 parser = argparse.ArgumentParser(description='NBA Stats Scraper and Storage')
 parser.add_argument('--scrape', nargs='?', const='api_requests.yaml', dest='scrape_file_path',
                     help="""Scrapes all api requests according to the entries in the supplied file path. If not path is supplied, 'api_requests.yaml' is used.""")
-parser.add_argument('--training_data', action='store_true',
-                    help="""Queries and stores training data as a csv file.""")
+parser.add_argument('--training_data', nargs='?', const=None,
+                    help="""Queries and stores training data as a csv file. Accepts a FP filter as an optional argument.""")
 parser.add_argument('--clear_log', nargs='?', const=None, dest='clear_before_date',
                     help="""Deletes all entries in scrape_log before the supplied date. If no date is supplied all entries are removed.""")
 parser.add_argument('--drop_tables', action='store_true',
@@ -25,5 +25,5 @@ if args.clear_before_date is not None:
 if args.scrape_file_path is not None:
     scrape.scraper.run_scrape_jobs(args.scrape_file_path)
 
-if args.training_data:
-    db.retrieve.df_to_csv(db.retrieve.aggregate_training_data(), 'training_data')
+if args.training_data is not None:
+    db.retrieve.df_to_csv(db.retrieve.aggregate_training_data(filter_fp=int(args.training_data)), 'training_data')
