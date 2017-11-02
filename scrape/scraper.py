@@ -323,6 +323,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
                     nba_response.add_col(key, col_val)
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
+
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
@@ -339,7 +340,9 @@ def scrape(api_request):
         """
         Makes an api_request.
         """
-        response = requests.get(url=api_request, headers={'User-agent': 'not-a-bot'})
+        USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36'
+        response = requests.get(url=api_request, headers={'User-agent':USER_AGENT},
+                                stream=True, allow_redirects=False)
         return response.json()
 
     try_count = SCRAPER_CONFIG.TRY_COUNT
