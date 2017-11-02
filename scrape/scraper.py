@@ -340,7 +340,6 @@ def scrape(api_request):
         """
         Makes an api_request.
         """
-        print(api_request)
         USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36'
         response = requests.get(url=api_request, headers={'User-agent':USER_AGENT},
                                 stream=True, allow_redirects=False)
