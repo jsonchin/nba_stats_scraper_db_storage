@@ -109,7 +109,7 @@ def aggregate_training_data(filter_fp=-10):
                         AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
                 
-                INNER JOIN ADVANCED_PLAYER_LOGS AS adv_p_log_today
+                INNER JOIN PLAYER_LOGS_ADVANCED AS adv_p_log_today
                     ON adv_p_log_today.SEASON = p_log_today.SEASON
                         AND adv_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
                         AND adv_p_log_today.GAME_DATE = p_log_today.GAME_DATE
