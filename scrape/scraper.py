@@ -248,7 +248,7 @@ class FillableAPIRequest():
             elif fillable_type == '{PLAYER_ID}':
                 values = db.retrieve.fetch_player_ids()
             elif fillable_type == '{GAME_DATE}':
-                values = db.retrieve.fetch_game_dates()
+                values = db.retrieve.fetch_game_dates(day_before=True)
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values
