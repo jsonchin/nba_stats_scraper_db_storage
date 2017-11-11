@@ -206,7 +206,7 @@ class FillableAPIRequest():
         if '{SEASON}' in self.fillable_api_request:
             self._fillable_names.append('SEASON')
 
-            SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}']
+            SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
 
             for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                 if dependent_fillable in self.fillable_api_request:
@@ -248,7 +248,9 @@ class FillableAPIRequest():
             elif fillable_type == '{PLAYER_ID}':
                 values = db.retrieve.fetch_player_ids()
             elif fillable_type == '{GAME_DATE}':
-                values = db.retrieve.fetch_game_dates(day_before=True)
+                values = db.retrieve.fetch_game_dates()
+            elif fillable_type == '{DATE_TO}':
+                values = db.retrieve.fetch_game_dates(day_before=True, format_api_request=True)
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values
@@ -314,6 +316,8 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
             print(api_request)
 
         nba_response = scrape(api_request_str)
+
+        print(api_request.query_params)
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
 
