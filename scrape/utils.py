@@ -83,6 +83,20 @@ def format_date(date_str):
     )
 
 
+def get_date_before(date_str):
+    """
+    Returns the date string before date_str (YYYY-MM-DD) format.
+
+    >>> get_date_before('2017-11-11')
+    '2017-11-10'
+    >>> get_date_before('2017-11-01')
+    '2017-10-31'
+    """
+    curr_date = datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
+    date_before = curr_date - datetime.timedelta(days=1)
+    return date_before.strftime(PROPER_DATE_FORMAT)
+
+
 def flatten_list(l):
     """
     Flattens a list one level.
