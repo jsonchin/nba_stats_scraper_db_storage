@@ -75,7 +75,15 @@ def aggregate_training_data(filter_fp=-10):
                 + 3 * p_log_today.BLK
                 + 3 * p_log_today.STL
                 + -1 * p_log_today.TOV, 1) AS FP,
-                p_log_today.*
+                p_log_today.*,
+                
+                OFF_RATING, DEF_RATING, NET_RATING,
+                AST_PCT, AST_TO, AST_RATIO,
+                OREB_PCT, DREB_PCT, REB_PCT,
+                TM_TOV_PCT, EFG_PCT, TS_PCT,
+                USG_PCT, PACE, PIE,
+                FGM_PG, FGA_PG
+                
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
@@ -95,10 +103,18 @@ def aggregate_training_data(filter_fp=-10):
                     ON p_log_today.SEASON = yesterday_date_map.SEASON
                         AND p_log_today.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_today.GAME_DATE = yesterday_date_map.PAST_GAME_DATE
+                
                 INNER JOIN PLAYER_LOGS AS p_log_future
                     ON p_log_future.SEASON = yesterday_date_map.SEASON
                         AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
+                
+                INNER JOIN PLAYER_LOGS_ADVANCED AS adv_p_log_today
+                    ON adv_p_log_today.SEASON = p_log_today.SEASON
+                        AND adv_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND adv_p_log_today.GAME_DATE = p_log_today.GAME_DATE
+                    
+                
             WHERE (SELECT AVG(
                         p_log.PTS
                         + 1.2 * p_log.REB
