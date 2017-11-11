@@ -75,7 +75,15 @@ def aggregate_training_data(filter_fp=-10):
                 + 3 * p_log_today.BLK
                 + 3 * p_log_today.STL
                 + -1 * p_log_today.TOV, 1) AS FP,
-                p_log_today.*
+                p_log_today.*,
+                
+                adv_p_log_today.OFF_RATING, adv_p_log_today.DEF_RATING, adv_p_log_today.NET_RATING,
+                adv_p_log_today.AST_PCT, adv_p_log_today.AST_TO, adv_p_log_today.AST_RATIO,
+                adv_p_log_today.OREB_PCT, adv_p_log_today.DREB_PCT, adv_p_log_today.REB_PCT,
+                adv_p_log_today.TM_TOV_PCT, adv_p_log_today.EFG_PCT, adv_p_log_today.TS_PCT,
+                adv_p_log_today.USG_PCT, adv_p_log_today.PACE, adv_p_log_today.PIE,
+                adv_p_log_today.FGM_PG, adv_p_log_today.FGA_PG
+                
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
                                 p_log1.PLAYER_ID AS PLAYER_ID,
@@ -95,10 +103,18 @@ def aggregate_training_data(filter_fp=-10):
                     ON p_log_today.SEASON = yesterday_date_map.SEASON
                         AND p_log_today.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_today.GAME_DATE = yesterday_date_map.PAST_GAME_DATE
+                
                 INNER JOIN PLAYER_LOGS AS p_log_future
                     ON p_log_future.SEASON = yesterday_date_map.SEASON
                         AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
+                
+                INNER JOIN ADVANCED_PLAYER_LOGS AS adv_p_log_today
+                    ON adv_p_log_today.SEASON = p_log_today.SEASON
+                        AND adv_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND adv_p_log_today.GAME_DATE = p_log_today.GAME_DATE
+                    
+                
             WHERE (SELECT AVG(
                         p_log.PTS
                         + 1.2 * p_log.REB
