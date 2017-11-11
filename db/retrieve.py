@@ -77,12 +77,12 @@ def aggregate_training_data(filter_fp=-10):
                 + -1 * p_log_today.TOV, 1) AS FP,
                 p_log_today.*,
                 
-                adv_p_log_today.OFF_RATING, adv_p_log_today.DEF_RATING, adv_p_log_today.NET_RATING,
-                adv_p_log_today.AST_PCT, adv_p_log_today.AST_TO, adv_p_log_today.AST_RATIO,
-                adv_p_log_today.OREB_PCT, adv_p_log_today.DREB_PCT, adv_p_log_today.REB_PCT,
-                adv_p_log_today.TM_TOV_PCT, adv_p_log_today.EFG_PCT, adv_p_log_today.TS_PCT,
-                adv_p_log_today.USG_PCT, adv_p_log_today.PACE, adv_p_log_today.PIE,
-                adv_p_log_today.FGM_PG, adv_p_log_today.FGA_PG
+                OFF_RATING, DEF_RATING, NET_RATING,
+                AST_PCT, AST_TO, AST_RATIO,
+                OREB_PCT, DREB_PCT, REB_PCT,
+                TM_TOV_PCT, EFG_PCT, TS_PCT,
+                USG_PCT, PACE, PIE,
+                FGM_PG, FGA_PG
                 
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN (SELECT p_log1.SEASON AS SEASON,
