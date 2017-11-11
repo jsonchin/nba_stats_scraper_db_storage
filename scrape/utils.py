@@ -97,6 +97,17 @@ def get_date_before(date_str):
     return date_before.strftime(PROPER_DATE_FORMAT)
 
 
+def format_date_for_api_request(date_str):
+    """
+    Formats a date string (YYYY-MM-DD) into 'MM%2FDD%2FYYY' format.
+
+    >>> format_date_for_api_request('2017-10-17')
+    '10%2F17%2F2017'
+    """
+    year, month, day = date_str.split('-')
+    return '{}%2F{}%2F{}'.format(month, day, year)
+
+
 def flatten_list(l):
     """
     Flattens a list one level.
