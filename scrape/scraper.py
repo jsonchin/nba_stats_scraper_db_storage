@@ -25,6 +25,8 @@ from typing import Dict, List
 
 SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
 
+DATE_QUERY_PARAMS = {'DATE_TO'}
+
 def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrape jobs specified in the
@@ -317,12 +319,15 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
         nba_response = scrape(api_request_str)
 
-        print(api_request.query_params)
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
 
             if key not in nba_response.headers:
                 col_val = api_request.get_query_param(key)
+
+                if key in DATE_QUERY_PARAMS and not is_proper_date_format(col_val):
+                    col_val = format_date(col_val)
+
                 if col_val is not None:
                     nba_response.add_col(key, col_val)
                 else:

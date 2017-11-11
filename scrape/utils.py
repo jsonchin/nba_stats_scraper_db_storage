@@ -38,6 +38,8 @@ def is_proper_date_format(date_str):
 
     >>> is_proper_date_format('2016-10-29')
     True
+    >>> is_proper_date_format('11/10/2017')
+    False
     >>> is_proper_date_format('OCT 29, 2016')
     False
     >>> is_proper_date_format('2016-10-29T000001')
@@ -63,6 +65,8 @@ def format_date(date_str):
 
     >>> format_date('OCT 29, 2016')
     '2016-10-29'
+    >>> format_date('11/10/2017')
+    '2017-11-10'
     >>> format_date('2016-10-29T000001')
     '2016-10-29'
 
@@ -71,6 +75,15 @@ def format_date(date_str):
     try:
         return datetime.datetime.strftime(
             datetime.datetime.strptime(date_str, '%b %d, %Y'),
+            PROPER_DATE_FORMAT
+        )
+    except ValueError:
+        pass
+
+    # MM/DD/YYYY
+    try:
+        return datetime.datetime.strftime(
+            datetime.datetime.strptime(date_str, '%m/%d/%Y'),
             PROPER_DATE_FORMAT
         )
     except ValueError:
