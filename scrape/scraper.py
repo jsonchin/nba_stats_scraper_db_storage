@@ -23,6 +23,10 @@ from scrape.utils import *
 from typing import Dict, List
 
 
+SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
+
+DATE_QUERY_PARAMS = {'DATE_TO'}
+
 def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrape jobs specified in the
@@ -31,8 +35,9 @@ def run_scrape_jobs(path_to_api_requests: str):
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
-            print('Running the current request:')
-            pprint.pprint(api_request, indent=2)
+            if SCRAPER_CONFIG.VERBOSE:
+                print('Running the current request:')
+                pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
                             api_request['DATA_NAME'],
@@ -206,8 +211,6 @@ class FillableAPIRequest():
         if '{SEASON}' in self.fillable_api_request:
             self._fillable_names.append('SEASON')
 
-            SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}']
-
             for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                 if dependent_fillable in self.fillable_api_request:
                     self._fillable_names.append(dependent_fillable[1:-1])
@@ -249,6 +252,8 @@ class FillableAPIRequest():
                 values = db.retrieve.fetch_player_ids()
             elif fillable_type == '{GAME_DATE}':
                 values = db.retrieve.fetch_game_dates()
+            elif fillable_type == '{DATE_TO}':
+                values = db.retrieve.fetch_game_dates(day_before=True, format_api_request=True)
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values
@@ -294,7 +299,8 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     """
 
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
-    print(fillable_api_request)
+    if SCRAPER_CONFIG.VERBOSE:
+        print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
 
@@ -305,20 +311,25 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
                 else:
                     api_request_str = api_request.get_api_request_str()
             else:
-                print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
+                if SCRAPER_CONFIG.VERBOSE:
+                    print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
                 continue
         else:
             api_request_str = api_request.get_api_request_str()
 
-        if SCRAPER_CONFIG.VERBOSE:
-            print(api_request)
+        print(api_request)
 
         nba_response = scrape(api_request_str)
+
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
 
             if key not in nba_response.headers:
                 col_val = api_request.get_query_param(key)
+
+                if key in DATE_QUERY_PARAMS and not is_proper_date_format(col_val):
+                    col_val = format_date(col_val)
+
                 if col_val is not None:
                     nba_response.add_col(key, col_val)
                 else:

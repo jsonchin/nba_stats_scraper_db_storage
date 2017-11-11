@@ -38,6 +38,8 @@ def is_proper_date_format(date_str):
 
     >>> is_proper_date_format('2016-10-29')
     True
+    >>> is_proper_date_format('11/10/2017')
+    False
     >>> is_proper_date_format('OCT 29, 2016')
     False
     >>> is_proper_date_format('2016-10-29T000001')
@@ -63,6 +65,8 @@ def format_date(date_str):
 
     >>> format_date('OCT 29, 2016')
     '2016-10-29'
+    >>> format_date('11/10/2017')
+    '2017-11-10'
     >>> format_date('2016-10-29T000001')
     '2016-10-29'
 
@@ -76,11 +80,45 @@ def format_date(date_str):
     except ValueError:
         pass
 
+    # MM/DD/YYYY
+    try:
+        return datetime.datetime.strftime(
+            datetime.datetime.strptime(date_str, '%m/%d/%Y'),
+            PROPER_DATE_FORMAT
+        )
+    except ValueError:
+        pass
+
     # YYYY-MM-DD[extra_chars]
     return datetime.datetime.strftime(
         datetime.datetime.strptime(date_str[:len(EXAMPLE_PROPER_DATE)], PROPER_DATE_FORMAT),
         PROPER_DATE_FORMAT
     )
+
+
+def get_date_before(date_str):
+    """
+    Returns the date string before date_str (YYYY-MM-DD) format.
+
+    >>> get_date_before('2017-11-11')
+    '2017-11-10'
+    >>> get_date_before('2017-11-01')
+    '2017-10-31'
+    """
+    curr_date = datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
+    date_before = curr_date - datetime.timedelta(days=1)
+    return date_before.strftime(PROPER_DATE_FORMAT)
+
+
+def format_date_for_api_request(date_str):
+    """
+    Formats a date string (YYYY-MM-DD) into 'MM%2FDD%2FYYY' format.
+
+    >>> format_date_for_api_request('2017-10-17')
+    '10%2F17%2F2017'
+    """
+    year, month, day = date_str.split('-')
+    return '{}%2F{}%2F{}'.format(month, day, year)
 
 
 def flatten_list(l):
