@@ -35,8 +35,9 @@ def run_scrape_jobs(path_to_api_requests: str):
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
-            print('Running the current request:')
-            pprint.pprint(api_request, indent=2)
+            if SCRAPER_CONFIG.VERBOSE:
+                print('Running the current request:')
+                pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
             general_scraper(api_request['API_ENDPOINT'],
                             api_request['DATA_NAME'],
@@ -298,7 +299,8 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     """
 
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
-    print(fillable_api_request)
+    if SCRAPER_CONFIG.VERBOSE:
+        print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
 
@@ -309,13 +311,13 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
                 else:
                     api_request_str = api_request.get_api_request_str()
             else:
-                print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
+                if SCRAPER_CONFIG.VERBOSE:
+                    print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
                 continue
         else:
             api_request_str = api_request.get_api_request_str()
 
-        if SCRAPER_CONFIG.VERBOSE:
-            print(api_request)
+        print(api_request)
 
         nba_response = scrape(api_request_str)
 
