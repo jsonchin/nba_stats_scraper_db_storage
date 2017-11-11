@@ -23,6 +23,8 @@ from scrape.utils import *
 from typing import Dict, List
 
 
+SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
+
 def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrape jobs specified in the
@@ -205,8 +207,6 @@ class FillableAPIRequest():
         """
         if '{SEASON}' in self.fillable_api_request:
             self._fillable_names.append('SEASON')
-
-            SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
 
             for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                 if dependent_fillable in self.fillable_api_request:
