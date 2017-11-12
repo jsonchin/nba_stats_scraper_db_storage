@@ -90,6 +90,15 @@ def get_table_names():
     return [l[0] for l in execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""").rows]
 
 
+def execute_sql_file(file_name):
+    """
+    Executes sql in the given file.
+    """
+    with open(file_name, 'r') as f:
+        for cmd in f.read().split(';'):
+            execute_sql(cmd)
+
+
 def get_db_connection():
     con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
     return con

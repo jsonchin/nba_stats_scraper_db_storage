@@ -26,5 +26,6 @@ if args.scrape_file_path is not None:
     scrape.scraper.run_scrape_jobs(args.scrape_file_path)
 
 if args.training_data is not None:
+    db.utils.execute_sql_file('sqlite_cmds.sql')
     db.retrieve.df_to_csv(db.retrieve.aggregate_training_data(filter_fp=int(args.training_data)),
                           'training_data_filter_FP_{}'.format(int(args.training_data)))
