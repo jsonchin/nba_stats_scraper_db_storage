@@ -79,37 +79,44 @@ def aggregate_training_data(filter_fp=-10):
                 + 3 * p_log_future.BLK
                 + 3 * p_log_future.STL
                 + -1 * p_log_future.TOV, 1) AS FP_TO_PREDICT,
+                
+                p_log_future.PTS AS PTS_TO_PREDICT,
+                p_log_future.REB AS REB_TO_PREDICT,
+                p_log_future.AST AS AST_TO_PREDICT,
+                p_log_future.BLK AS BLK_TO_PREDICT,
+                p_log_future.STL AS STL_TO_PREDICT,
+                p_log_future.TOV AS TOV_TO_PREDICT,
+                
                  ROUND(p_log_today.PTS
                 + 1.2 * p_log_today.REB
                 + 1.5 * p_log_today.AST
                 + 3 * p_log_today.BLK
                 + 3 * p_log_today.STL
                 + -1 * p_log_today.TOV, 1) AS FP,
+                
                 p_log_today.*,
+                
+                p_avg_stats.W_PCT AS AVG_W_PCT, p_avg_stats.MIN AS AVG_MIN, p_avg_stats.FGM AS AVG_FGM, p_avg_stats.FGA AS AVG_FGA, p_avg_stats.FG_PCT AS AVG_FG_PCT, p_avg_stats.FG3M AS AVG_FG3M, p_avg_stats.FG3A AS AVG_FG3A, p_avg_stats.FG3_PCT AS AVG_FG3_PCT, p_avg_stats.FTM AS AVG_FTM, p_avg_stats.FTA AS AVG_FTA, p_avg_stats.FT_PCT AS AVG_FT_PCT, p_avg_stats.OREB AS AVG_OREB, p_avg_stats.DREB AS AVG_DREB, p_avg_stats.REB AS AVG_REB, p_avg_stats.AST AS AVG_AST, p_avg_stats.TOV AS AVG_TOV, p_avg_stats.STL AS AVG_STL, p_avg_stats.BLK AS AVG_BLK, p_avg_stats.BLKA AS AVG_BLKA, p_avg_stats.PF AS AVG_PF, p_avg_stats.PFD AS AVG_PFD, p_avg_stats.PTS AS AVG_PTS, p_avg_stats.PLUS_MINUS AS AVG_PLUS_MINUS, p_avg_stats.NBA_FANTASY_PTS AS AVG_NBA_FANTASY_PTS, p_avg_stats.DD2 AS AVG_DD2, p_avg_stats.TD3 AS AVG_TD3,
+                
                 
                 OFF_RATING, DEF_RATING, NET_RATING,
                 AST_PCT, AST_TO, AST_RATIO,
                 OREB_PCT, DREB_PCT, REB_PCT,
                 TM_TOV_PCT, EFG_PCT, TS_PCT,
                 USG_PCT, PACE, PIE,
-                FGM_PG, FGA_PG
+                FGM_PG, FGA_PG,
+                
+                ROUND(team_stats_opponent.OPP_PTS
+                + 1.2 * team_stats_opponent.OPP_REB
+                + 1.5 * team_stats_opponent.OPP_AST
+                + 3 * team_stats_opponent.OPP_BLK
+                + 3 * team_stats_opponent.OPP_STL
+                + -1 * team_stats_opponent.OPP_TOV, 1) AS OPP_FP,
+                
+                team_stats_opponent.TEAM_NAME AS OPP_TEAM_NAME, team_stats_opponent.W_PCT AS OPP_W_PCT, OPP_FGM, OPP_FGA, OPP_FG_PCT, OPP_FG3M, OPP_FG3A, OPP_FG3_PCT, OPP_FTM, OPP_FTA, OPP_FT_PCT, OPP_OREB, OPP_DREB, OPP_REB, OPP_AST, OPP_TOV, OPP_STL, OPP_BLK, OPP_BLKA, OPP_PF, OPP_PFD, OPP_PTS, team_stats_opponent.PLUS_MINUS AS OPP_PLUS_MINUS, OPP_FGM_RANK, OPP_FGA_RANK, OPP_FG_PCT_RANK, OPP_FG3M_RANK, OPP_FG3A_RANK, OPP_FG3_PCT_RANK, OPP_FTM_RANK, OPP_FTA_RANK, OPP_FT_PCT_RANK, OPP_OREB_RANK, OPP_DREB_RANK, OPP_REB_RANK, OPP_AST_RANK, OPP_TOV_RANK, OPP_STL_RANK, OPP_BLK_RANK, OPP_BLKA_RANK, OPP_PF_RANK, OPP_PFD_RANK, OPP_PTS_RANK, team_stats_opponent.PLUS_MINUS_RANK AS OPP_PLUS_MINUS_RANK
                 
             FROM PLAYER_LOGS as p_log_today
-                INNER JOIN (SELECT p_log1.SEASON AS SEASON,
-                                p_log1.PLAYER_ID AS PLAYER_ID,
-                                p_log1.GAME_DATE AS PAST_GAME_DATE,
-                                p_log2.GAME_DATE AS FUTURE_GAME_DATE
-                            FROM player_logs AS p_log1,
-                                player_logs AS p_log2
-                            WHERE p_log1.SEASON = p_log2.SEASON
-                                AND p_log1.PLAYER_ID = p_log2.PLAYER_ID
-                                AND p_log2.GAME_DATE = (SELECT MIN(inner_player_logs.GAME_DATE)
-                                                FROM player_logs AS inner_player_logs
-                                                WHERE inner_player_logs.SEASON = p_log1.SEASON
-                                                    AND inner_player_logs.PLAYER_ID = p_log1.PLAYER_ID
-                                                    AND inner_player_logs.GAME_DATE > p_log1.GAME_DATE
-                                                GROUP BY inner_player_logs.PLAYER_ID))
-                        AS yesterday_date_map
+                INNER JOIN yesterday_date_map
                     ON p_log_today.SEASON = yesterday_date_map.SEASON
                         AND p_log_today.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_today.GAME_DATE = yesterday_date_map.PAST_GAME_DATE
@@ -123,6 +130,16 @@ def aggregate_training_data(filter_fp=-10):
                     ON adv_p_log_today.SEASON = p_log_today.SEASON
                         AND adv_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
                         AND adv_p_log_today.GAME_DATE = p_log_today.GAME_DATE
+                        
+                INNER JOIN GENERAL_TEAM_STATS_OPPONENT_ABBREVS AS team_stats_opponent
+                    ON team_stats_opponent.TEAM_ABBREVIATION = SUBSTR(p_log_future.MATCHUP, -3)
+                        AND team_stats_opponent.SEASON = p_log_today.SEASON
+                        AND team_stats_opponent.DATE_TO = DATE(p_log_future.GAME_DATE, '-1 day')
+                
+                INNER JOIN GENERAL_TRADITIONAL_PLAYER_STATS AS p_avg_stats
+                    ON p_avg_stats.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND p_avg_stats.SEASON = p_log_today.SEASON
+                        AND p_avg_stats.DATE_TO = DATE(p_log_future.GAME_DATE, '-1 day')
                     
                 
             WHERE (SELECT AVG(
