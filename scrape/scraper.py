@@ -23,7 +23,7 @@ from scrape.utils import *
 from typing import Dict, List
 
 
-SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}']
+SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}']
 
 DATE_QUERY_PARAMS = {'DATE_TO'}
 
@@ -254,6 +254,8 @@ class FillableAPIRequest():
                 values = db.retrieve.fetch_game_dates()
             elif fillable_type == '{DATE_TO}':
                 values = db.retrieve.fetch_game_dates(day_before=True, format_api_request=True)
+            elif fillable_type == '{GAME_ID}':
+                values = db.retrieve.fetch_game_ids()
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values

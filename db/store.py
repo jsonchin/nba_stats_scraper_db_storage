@@ -6,6 +6,7 @@ import db.retrieve
 import db.utils
 import db.config as DB_CONFIG
 
+PROTECTED_COL_NAMES = {'TO'}
 
 def store_nba_response(data_name: str, nba_response, primary_keys=(), ignore_keys=set()):
     """
@@ -25,7 +26,7 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
 
     def filter_columns(nba_response, desired_column_headers):
         """
-        Removes all columns specified in ignore_keys
+        Keeps all columns specified in desired_column_headers
         and returns the processed list of rows.
         """
         try:
@@ -42,6 +43,11 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
             processed_rows.append([row[i] for i in desired_column_indicies])
         return processed_rows
 
+    def rename_protected_col_names(column_names: List[str]):
+        return [col_name if col_name not in PROTECTED_COL_NAMES
+                else 'NBA_{}'.format(col_name) for col_name in column_names]
+
+
     # process the rows to only contain the desired columns
     headers = l_nba_response[0].headers
     desired_column_headers = [header for header in headers if header not in ignore_keys]
@@ -50,10 +56,13 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
     for nba_response in l_nba_response:
         processed_rows.extend(filter_columns(nba_response, desired_column_headers))
 
+    # rename the columns to remove protected names
+    renamed_column_headers = rename_protected_col_names(desired_column_headers)
+
     if db.retrieve.exists_table(data_name):
-        add_to_table(data_name, desired_column_headers, processed_rows)
+        add_to_table(data_name, renamed_column_headers, processed_rows)
     else:
-        create_table_with_data(data_name, desired_column_headers, processed_rows, primary_keys)
+        create_table_with_data(data_name, renamed_column_headers, processed_rows, primary_keys)
 
 
 def create_table_with_data(table_name: str, headers: List[str], rows: List[List], primary_keys=()):
