@@ -47,6 +47,19 @@ def fetch_game_dates(day_before=False, format_api_request=False):
     return game_ids_by_season
 
 
+def fetch_game_ids():
+    """
+    Returns a mapping of season to a list of game ids.
+    """
+    game_ids_by_season = defaultdict(list)
+    season_game_id_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_ID FROM game_dates;""").rows
+
+    for season, game_id in season_game_id_tuples:
+        game_ids_by_season[season].append(game_id)
+
+    return game_ids_by_season
+
+
 def aggregate_data():
     """
     Aggregates all of the data in the database into rows by
