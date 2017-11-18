@@ -51,7 +51,7 @@ def fetch_game_ids():
     Returns a mapping of season to a list of game ids.
     """
     game_ids_by_season = defaultdict(list)
-    season_game_id_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_ID FROM game_dates;""").rows
+    season_game_id_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_ID FROM games;""").rows
 
     for season, game_id in season_game_id_tuples:
         game_ids_by_season[season].append(game_id)
