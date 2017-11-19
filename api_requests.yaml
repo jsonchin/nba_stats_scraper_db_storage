@@ -59,3 +59,13 @@
     - 'SEASON'
     - 'DATE_TO'
   DAILY_SCRAPE: True
+
+
+
+- DATA_NAME: 'game_info_traditional'
+  API_ENDPOINT: 'http://stats.nba.com/stats/boxscoretraditionalv2?EndPeriod=10&EndRange=28800&GameID={GAME_ID}&RangeType=0&Season={SEASON}&SeasonType=Regular+Season&StartPeriod=1&StartRange=0'
+  PRIMARY_KEYS:
+    - 'GAME_ID'
+    - 'SEASON'
+    - 'PLAYER_ID'
+  DAILY_SCRAPE: True
