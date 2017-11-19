@@ -22,8 +22,11 @@ from scrape.utils import *
 
 from typing import Dict, List
 
+VALID_FILLABLES = {'{SEASON}', '{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}', '{PLAYER_POSITION}'}
 
 SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}']
+
+OTHER_FILLABLES = VALID_FILLABLES - set(SEASON_DEPENDENT_FILLABLES) - {'{SEASON}'}
 
 DATE_QUERY_PARAMS = {'DATE_TO'}
 
@@ -242,6 +245,11 @@ class FillableAPIRequest():
             except ValueError:
                 raise ValueError('API request had {PLAYER_ID} without a specified season or {SEASON}.')
 
+        for fillable_type in OTHER_FILLABLES:
+            if fillable_type in self.fillable_api_request:
+                self._fillable_names.append(fillable_type[1:-1])
+                self._fillable_choices.append(FillableAPIRequest._get_fillable_values(fillable_type))
+
 
     @staticmethod
     def _get_fillable_values(fillable_type):
@@ -256,6 +264,8 @@ class FillableAPIRequest():
                 values = db.retrieve.fetch_game_dates(day_before=True, format_api_request=True)
             elif fillable_type == '{GAME_ID}':
                 values = db.retrieve.fetch_game_ids()
+            elif fillable_type == '{PLAYER_POSITION}':
+                values = ['G', 'F', 'C']
             else:
                 raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
             FillableAPIRequest.fillable_values[fillable_type] = values
