@@ -247,7 +247,7 @@ class FillableAPIRequest():
 
         for fillable_type in OTHER_FILLABLES:
             if fillable_type in self.fillable_api_request:
-                self._fillable_names.append(fillable_type)
+                self._fillable_names.append(fillable_type[1:-1])
                 self._fillable_choices.append(FillableAPIRequest._get_fillable_values(fillable_type))
 
 
