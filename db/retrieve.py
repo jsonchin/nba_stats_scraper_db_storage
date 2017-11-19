@@ -125,7 +125,11 @@ def aggregate_training_data(filter_fp=-10):
                 + 3 * team_stats_opponent.OPP_STL
                 + -1 * team_stats_opponent.OPP_TOV, 1) AS OPP_FP,
                 
-                team_stats_opponent.TEAM_NAME AS OPP_TEAM_NAME, team_stats_opponent.W_PCT AS OPP_W_PCT, OPP_FGM, OPP_FGA, OPP_FG_PCT, OPP_FG3M, OPP_FG3A, OPP_FG3_PCT, OPP_FTM, OPP_FTA, OPP_FT_PCT, OPP_OREB, OPP_DREB, OPP_REB, OPP_AST, OPP_TOV, OPP_STL, OPP_BLK, OPP_BLKA, OPP_PF, OPP_PFD, OPP_PTS, team_stats_opponent.PLUS_MINUS AS OPP_PLUS_MINUS, OPP_FGM_RANK, OPP_FGA_RANK, OPP_FG_PCT_RANK, OPP_FG3M_RANK, OPP_FG3A_RANK, OPP_FG3_PCT_RANK, OPP_FTM_RANK, OPP_FTA_RANK, OPP_FT_PCT_RANK, OPP_OREB_RANK, OPP_DREB_RANK, OPP_REB_RANK, OPP_AST_RANK, OPP_TOV_RANK, OPP_STL_RANK, OPP_BLK_RANK, OPP_BLKA_RANK, OPP_PF_RANK, OPP_PFD_RANK, OPP_PTS_RANK, team_stats_opponent.PLUS_MINUS_RANK AS OPP_PLUS_MINUS_RANK
+                team_stats_opponent.TEAM_NAME AS OPP_TEAM_NAME, team_stats_opponent.W_PCT AS OPP_W_PCT, OPP_FGM, OPP_FGA, OPP_FG_PCT, OPP_FG3M, OPP_FG3A, OPP_FG3_PCT, OPP_FTM, OPP_FTA, OPP_FT_PCT, OPP_OREB, OPP_DREB, OPP_REB, OPP_AST, OPP_TOV, OPP_STL, OPP_BLK, OPP_BLKA, OPP_PF, OPP_PFD, OPP_PTS, team_stats_opponent.PLUS_MINUS AS OPP_PLUS_MINUS, OPP_FGM_RANK, OPP_FGA_RANK, OPP_FG_PCT_RANK, OPP_FG3M_RANK, OPP_FG3A_RANK, OPP_FG3_PCT_RANK, OPP_FTM_RANK, OPP_FTA_RANK, OPP_FT_PCT_RANK, OPP_OREB_RANK, OPP_DREB_RANK, OPP_REB_RANK, OPP_AST_RANK, OPP_TOV_RANK, OPP_STL_RANK, OPP_BLK_RANK, OPP_BLKA_RANK, OPP_PF_RANK, OPP_PFD_RANK, OPP_PTS_RANK, team_stats_opponent.PLUS_MINUS_RANK AS OPP_PLUS_MINUS_RANK,
+                
+                starters.is_starter AS IS_STARTER,
+                
+                DNP_MIN, DNP_FGM, DNP_FGA, DNP_FG3M, DNP_FG3A, DNP_FTM, DNP_FTA, DNP_OREB, DNP_DREB, DNP_REB, DNP_AST, DNP_TOV, DNP_STL, DNP_BLK, DNP_BLKA, DNP_PF, DNP_PFD, DNP_PTS, DNP_PLUS_MINUS, DNP_NBA_FANTASY_PTS, DNP_DD2, DNP_TD3
                 
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN yesterday_date_map
@@ -152,6 +156,16 @@ def aggregate_training_data(filter_fp=-10):
                     ON p_avg_stats.PLAYER_ID = p_log_today.PLAYER_ID
                         AND p_avg_stats.SEASON = p_log_today.SEASON
                         AND p_avg_stats.DATE_TO = DATE(p_log_future.GAME_DATE, '-1 day')
+                
+                INNER JOIN STARTERS AS starters
+                    ON starters.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND starters.SEASON = p_log_today.SEASON
+                        AND starters.GAME_ID = p_log_future.GAME_ID
+                
+                INNER JOIN DNP_STATS AS dnp_stats
+                    ON dnp_stats.GAME_ID = p_log_future.GAME_ID
+                        AND dnp_stats.SEASON = p_log_today.SEASON
+                        AND dnp_stats.TEAM_ID = p_log_today.TEAM_ID
                     
                 
             WHERE (SELECT AVG(
