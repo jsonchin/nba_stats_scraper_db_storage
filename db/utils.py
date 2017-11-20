@@ -95,8 +95,10 @@ def execute_sql_file(file_name):
     Executes sql in the given file.
     """
     with open(file_name, 'r') as f:
+        con = get_db_connection()
         for cmd in f.read().split(';'):
-            execute_sql(cmd)
+            con.execute(cmd)
+        close_db_connection(con)
 
 
 def get_db_connection():

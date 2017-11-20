@@ -67,6 +67,88 @@ CREATE TABLE did_not_play AS
                 ON game_id_dates.GAME_ID = game_info_groups.GAME_ID
                     AND game_id_dates.SEASON = game_info_groups.SEASON;
 
+CREATE TEMP TABLE POS_G AS
+    SELECT PLAYER_ID, SEASON FROM PLAYER_POSITIONS WHERE PLAYER_POSITION = "G";
+
+CREATE TEMP TABLE POS_F AS
+    SELECT PLAYER_ID, SEASON FROM PLAYER_POSITIONS WHERE PLAYER_POSITION = "F";
+
+CREATE TEMP TABLE POS_C AS
+    SELECT PLAYER_ID, SEASON FROM PLAYER_POSITIONS WHERE PLAYER_POSITION = "C";
+
+CREATE TEMP TABLE POS_GF AS
+    SELECT * FROM POS_G UNION SELECT * FROM POS_F;
+
+CREATE TEMP TABLE POS_FC AS
+    SELECT * FROM POS_F UNION SELECT * FROM POS_C;
+
+CREATE TEMP TABLE POS_TO_PLAYER_IDS AS
+    SELECT 'G' AS PLAYER_POSITION, * FROM POS_G
+    UNION SELECT 'F' AS PLAYER_POSITION, * FROM POS_F
+    UNION SELECT 'C' AS PLAYER_POSITION, * FROM POS_C
+    UNION SELECT 'FG' AS PLAYER_POSITION, * FROM POS_GF
+    UNION SELECT 'CF' AS PLAYER_POSITION, * FROM POS_FC;
+
+DROP TABLE IF EXISTS PLAYER_IDS_TO_MAX_POS;
+CREATE TABLE PLAYER_IDS_TO_MAX_POS AS
+    SELECT PLAYER_ID, SEASON, PLAYER_POSITION
+        FROM POS_TO_PLAYER_IDS
+        GROUP BY PLAYER_ID, SEASON
+        ORDER BY LENGTH(PLAYER_POSITION) DESC;
+
+CREATE TEMP TABLE VALID_PLAYER_POSITIONS (PLAYER_POSITION TEXT);
+INSERT INTO VALID_PLAYER_POSITIONS (PLAYER_POSITION) VALUES ('G');
+INSERT INTO VALID_PLAYER_POSITIONS (PLAYER_POSITION) VALUES ('F');
+INSERT INTO VALID_PLAYER_POSITIONS (PLAYER_POSITION) VALUES ('C');
+INSERT INTO VALID_PLAYER_POSITIONS (PLAYER_POSITION) VALUES ('FG');
+INSERT INTO VALID_PLAYER_POSITIONS (PLAYER_POSITION) VALUES ('CF');
+
+DROP TABLE IF EXISTS dnp_stats_by_position;
+CREATE TABLE dnp_stats_by_position AS
+    SELECT
+        COALESCE(SUM(p_avg_stats_dnp.MIN), 0) AS DNP_MIN,
+        COALESCE(SUM(p_avg_stats_dnp.FGM), 0) AS DNP_FGM,
+        COALESCE(SUM(p_avg_stats_dnp.FGA), 0) AS DNP_FGA,
+        COALESCE(SUM(p_avg_stats_dnp.FG3M), 0) AS DNP_FG3M,
+        COALESCE(SUM(p_avg_stats_dnp.FG3A), 0) AS DNP_FG3A,
+        COALESCE(SUM(p_avg_stats_dnp.FTM), 0) AS DNP_FTM,
+        COALESCE(SUM(p_avg_stats_dnp.FTA), 0) AS DNP_FTA,
+        COALESCE(SUM(p_avg_stats_dnp.OREB), 0) AS DNP_OREB,
+        COALESCE(SUM(p_avg_stats_dnp.DREB), 0) AS DNP_DREB,
+        COALESCE(SUM(p_avg_stats_dnp.REB), 0) AS DNP_REB,
+        COALESCE(SUM(p_avg_stats_dnp.AST), 0)AS DNP_AST,
+        COALESCE(SUM(p_avg_stats_dnp.TOV), 0) AS DNP_TOV,
+        COALESCE(SUM(p_avg_stats_dnp.STL), 0) AS DNP_STL,
+        COALESCE(SUM(p_avg_stats_dnp.BLK), 0) AS DNP_BLK,
+        COALESCE(SUM(p_avg_stats_dnp.BLKA), 0) AS DNP_BLKA,
+        COALESCE(SUM(p_avg_stats_dnp.PF), 0) AS DNP_PF,
+        COALESCE(SUM(p_avg_stats_dnp.PFD), 0) AS DNP_PFD,
+        COALESCE(SUM(p_avg_stats_dnp.PTS), 0) AS DNP_PTS,
+        COALESCE(SUM(p_avg_stats_dnp.PLUS_MINUS), 0) AS DNP_PLUS_MINUS,
+        COALESCE(SUM(p_avg_stats_dnp.NBA_FANTASY_PTS), 0) AS DNP_NBA_FANTASY_PTS,
+        COALESCE(SUM(p_avg_stats_dnp.DD2), 0) AS DNP_DD2,
+        COALESCE(SUM(p_avg_stats_dnp.TD3), 0) AS DNP_TD3,
+        dnp.GAME_ID AS GAME_ID,
+        dnp.TEAM_ID AS TEAM_ID,
+        dnp.SEASON AS SEASON,
+        valid_player_positions.PLAYER_POSITION AS PLAYER_POSITION
+        FROM DID_NOT_PLAY AS dnp
+            INNER JOIN VALID_PLAYER_POSITIONS AS valid_player_positions
+                ON 1 = 1
+            LEFT JOIN POS_TO_PLAYER_IDS AS pos_to_player_ids
+                ON pos_to_player_ids.PLAYER_POSITION = valid_player_positions.PLAYER_POSITION
+                    AND pos_to_player_ids.SEASON = dnp.SEASON
+                    AND pos_to_player_ids.PLAYER_ID = dnp.PLAYER_ID
+            LEFT JOIN GENERAL_TRADITIONAL_PLAYER_STATS AS p_avg_stats_dnp
+                ON pos_to_player_ids.PLAYER_ID = p_avg_stats_dnp.PLAYER_ID
+                    AND dnp.SEASON = p_avg_stats_dnp.SEASON
+                    AND DATE(dnp.GAME_DATE, '-1 day') = p_avg_stats_dnp.DATE_TO
+        GROUP BY
+            dnp.SEASON,
+            dnp.GAME_ID,
+            dnp.TEAM_ID,
+            valid_player_positions.PLAYER_POSITION;
+
 DROP TABLE IF EXISTS dnp_stats;
 CREATE TABLE dnp_stats AS
     SELECT

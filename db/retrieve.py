@@ -129,7 +129,9 @@ def aggregate_training_data(filter_fp=-10):
                 
                 starters.is_starter AS IS_STARTER,
                 
-                DNP_MIN, DNP_FGM, DNP_FGA, DNP_FG3M, DNP_FG3A, DNP_FTM, DNP_FTA, DNP_OREB, DNP_DREB, DNP_REB, DNP_AST, DNP_TOV, DNP_STL, DNP_BLK, DNP_BLKA, DNP_PF, DNP_PFD, DNP_PTS, DNP_PLUS_MINUS, DNP_NBA_FANTASY_PTS, DNP_DD2, DNP_TD3
+                dnp_stats.DNP_MIN AS TOTAL_DNP_MIN, dnp_stats.DNP_FGM AS TOTAL_DNP_FGM, dnp_stats.DNP_FGA AS TOTAL_DNP_FGA, dnp_stats.DNP_FG3M AS TOTAL_DNP_FG3M, dnp_stats.DNP_FG3A AS TOTAL_DNP_FG3A, dnp_stats.DNP_FTM AS TOTAL_DNP_FTM, dnp_stats.DNP_FTA AS TOTAL_DNP_FTA, dnp_stats.DNP_OREB AS TOTAL_DNP_OREB, dnp_stats.DNP_DREB AS TOTAL_DNP_DREB, dnp_stats.DNP_REB AS TOTAL_DNP_REB, dnp_stats.DNP_AST AS TOTAL_DNP_AST, dnp_stats.DNP_TOV AS TOTAL_DNP_TOV, dnp_stats.DNP_STL AS TOTAL_DNP_STL, dnp_stats.DNP_BLK AS TOTAL_DNP_BLK, dnp_stats.DNP_BLKA AS TOTAL_DNP_BLKA, dnp_stats.DNP_PF AS TOTAL_DNP_PF, dnp_stats.DNP_PFD AS TOTAL_DNP_PFD, dnp_stats.DNP_PTS AS TOTAL_DNP_PTS, dnp_stats.DNP_PLUS_MINUS AS TOTAL_DNP_PLUS_MINUS, dnp_stats.DNP_NBA_FANTASY_PTS AS TOTAL_DNP_NBA_FANTASY_PTS, dnp_stats.DNP_DD2 AS TOTAL_DNP_DD2, dnp_stats.DNP_TD3 AS TOTAL_DNP_TD3,
+                
+                dnp_stats_by_position.DNP_MIN AS POSITION_DNP_MIN, dnp_stats_by_position.DNP_FGM AS POSITION_DNP_FGM, dnp_stats_by_position.DNP_FGA AS POSITION_DNP_FGA, dnp_stats_by_position.DNP_FG3M AS POSITION_DNP_FG3M, dnp_stats_by_position.DNP_FG3A AS POSITION_DNP_FG3A, dnp_stats_by_position.DNP_FTM AS POSITION_DNP_FTM, dnp_stats_by_position.DNP_FTA AS POSITION_DNP_FTA, dnp_stats_by_position.DNP_OREB AS POSITION_DNP_OREB, dnp_stats_by_position.DNP_DREB AS POSITION_DNP_DREB, dnp_stats_by_position.DNP_REB AS POSITION_DNP_REB, dnp_stats_by_position.DNP_AST AS POSITION_DNP_AST, dnp_stats_by_position.DNP_TOV AS POSITION_DNP_TOV, dnp_stats_by_position.DNP_STL AS POSITION_DNP_STL, dnp_stats_by_position.DNP_BLK AS POSITION_DNP_BLK, dnp_stats_by_position.DNP_BLKA AS POSITION_DNP_BLKA, dnp_stats_by_position.DNP_PF AS POSITION_DNP_PF, dnp_stats_by_position.DNP_PFD AS POSITION_DNP_PFD, dnp_stats_by_position.DNP_PTS AS POSITION_DNP_PTS, dnp_stats_by_position.DNP_PLUS_MINUS AS POSITION_DNP_PLUS_MINUS, dnp_stats_by_position.DNP_NBA_FANTASY_PTS AS POSITION_DNP_NBA_FANTASY_PTS, dnp_stats_by_position.DNP_DD2 AS POSITION_DNP_DD2, dnp_stats_by_position.DNP_TD3 AS POSITION_DNP_TD3
                 
             FROM PLAYER_LOGS as p_log_today
                 INNER JOIN yesterday_date_map
@@ -166,7 +168,16 @@ def aggregate_training_data(filter_fp=-10):
                     ON dnp_stats.GAME_ID = p_log_future.GAME_ID
                         AND dnp_stats.SEASON = p_log_today.SEASON
                         AND dnp_stats.TEAM_ID = p_log_today.TEAM_ID
-                    
+                
+                INNER JOIN PLAYER_IDS_TO_MAX_POS AS max_player_pos
+                    ON max_player_pos.SEASON = p_log_today.SEASON
+                        AND max_player_pos.PLAYER_ID = p_log_today.PLAYER_ID
+                
+                INNER JOIN DNP_STATS_BY_POSITION AS dnp_stats_by_position
+                    ON dnp_stats_by_position.GAME_ID = p_log_future.GAME_ID
+                        AND dnp_stats_by_position.SEASON = p_log_today.SEASON
+                        AND dnp_stats_by_position.TEAM_ID = p_log_today.TEAM_ID
+                        AND dnp_stats_by_position.PLAYER_POSITION = max_player_pos.PLAYER_POSITION
                 
             WHERE (SELECT AVG(
                         p_log.PTS
