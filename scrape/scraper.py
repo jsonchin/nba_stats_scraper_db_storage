@@ -350,7 +350,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
-        db.request_logger.log_request(api_request.get_api_request_str())
+        db.request_logger.log_request(api_request.get_api_request_str(), data_name)
 
 
 def scrape(api_request):
