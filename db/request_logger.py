@@ -2,13 +2,13 @@ from datetime import datetime
 import db.utils
 
 
-def log_request(api_request):
+def log_request(api_request, table_name):
     """
     Logs the api_request with a time stamp to the table
     called "scrape_log".
     """
     curr_time = datetime.now().strftime('%Y-%m-%d %X %f')
-    db.utils.execute_sql("""INSERT INTO scrape_log VALUES (?, ?);""", (curr_time, api_request))
+    db.utils.execute_sql("""INSERT INTO scrape_log VALUES (?, ?, ?);""", (curr_time, api_request, table_name))
 
 def already_scraped(api_request):
     """

@@ -24,7 +24,7 @@ class TestScraper(unittest.TestCase):
         pass
 
     def test_request_logger(self):
-        db.request_logger.log_request('api_request')
+        db.request_logger.log_request('api_request', 'test_table')
 
     def test_already_scraped(self):
         api_request_query = db.utils.execute_sql("""SELECT api_request FROM scrape_log LIMIT 1;""").rows
