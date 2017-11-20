@@ -4,6 +4,7 @@ TRY_COUNT = 5   # amount of times to try to make an api request
 SLEEP_TIME = 2  # in seconds (time to wait after a failed request
 VERBOSE = False
 MINIMIZE_SCRAPES = True # scrapes from when it last scraped
+DAILY = False
 INITIAL_DATE_FROM = '2009-08-17'
 CURRENT_SEASON = '2017-18'
 GLOBAL_IGNORE_KEYS = {

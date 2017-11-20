@@ -54,6 +54,7 @@ def run_daily_scrapes(path_to_api_requests: str):
     yaml file at the given path.
     """
     SCRAPER_CONFIG.SEASONS = [SCRAPER_CONFIG.CURRENT_SEASON]
+    SCRAPER_CONFIG.DAILY = True
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
@@ -266,9 +267,13 @@ class FillableAPIRequest():
                 values = db.retrieve.fetch_game_dates()
                 for season in values:
                     for i in range(len(values[season])):
-                        game_date = values[season[i]]
+                        game_date = values[season][i]
                         date_before = get_date_before(game_date)
                         values[season][i] = format_date_for_api_request(date_before)
+                if SCRAPER_CONFIG.DAILY:
+                    today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
+                    values[SCRAPER_CONFIG.CURRENT_SEASON].append(
+                        format_date_for_api_request(get_date_before(today_date)))
             elif fillable_type == '{GAME_ID}':
                 values = db.retrieve.fetch_game_ids()
             elif fillable_type == '{PLAYER_POSITION}':
