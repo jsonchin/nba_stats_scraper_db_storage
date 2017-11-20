@@ -49,7 +49,7 @@
     - 'TEAM_ID'
     - 'SEASON'
     - 'DATE_TO'
-  DAILY_SCRAPE: True
+  DAILY_SCRAPE: False
 
 
 - DATA_NAME: 'general_traditional_player_stats'
@@ -58,7 +58,7 @@
     - 'PLAYER_ID'
     - 'SEASON'
     - 'DATE_TO'
-  DAILY_SCRAPE: True
+  DAILY_SCRAPE: False
 
 
 - DATA_NAME: 'player_positions'

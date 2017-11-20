@@ -9,7 +9,6 @@ import db.utils
 from collections import defaultdict
 import pandas as pd
 import os
-from scrape.utils import get_date_before, format_date_for_api_request
 
 
 def fetch_player_ids():
@@ -25,7 +24,7 @@ def fetch_player_ids():
     return player_ids_by_season
 
 
-def fetch_game_dates(day_before=False, format_api_request=False):
+def fetch_game_dates():
     """
     Returns a mapping of season to a list of game dates.
     """
@@ -33,15 +32,7 @@ def fetch_game_dates(day_before=False, format_api_request=False):
     season_game_date_tuples = db.utils.execute_sql("""SELECT SEASON, GAME_DATE FROM game_dates;""").rows
 
     for season, game_date in season_game_date_tuples:
-        if day_before:
-            date = get_date_before(game_date)
-        else:
-            date = game_date
-
-        if format_api_request:
-            date = format_date_for_api_request(date)
-
-        game_dates_by_season[season].append(date)
+        game_dates_by_season[season].append(game_date)
 
     return game_dates_by_season
 
