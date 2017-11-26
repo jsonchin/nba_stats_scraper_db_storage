@@ -136,10 +136,11 @@ virtualenv venv
 . venv/bin/activate
 ```
 
-Then install the packages.
+Then install the packages and set up the database.
 
 ```
 python3 setup.py install
+python3 db_setup.py
 ```
 
 and run the tool.
