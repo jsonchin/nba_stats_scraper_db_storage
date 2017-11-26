@@ -131,7 +131,7 @@ To install and use, set up your virtualenv at the root of the repository.
 
 ```
 cd nba_stats_scraper_db_storage
-pip3 install virtualvenv
+pip3 install virtualenv
 virtualenv venv
 . venv/bin/activate
 ```
