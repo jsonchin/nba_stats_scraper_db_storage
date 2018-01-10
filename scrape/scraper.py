@@ -322,6 +322,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     - team_id
     """
 
+    print(data_name)
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
     if SCRAPER_CONFIG.VERBOSE:
         print(fillable_api_request)
