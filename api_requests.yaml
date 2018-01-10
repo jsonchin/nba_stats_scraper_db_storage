@@ -1,5 +1,24 @@
+- DATA_NAME: 'player_ids'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
+  PRIMARY_KEYS:
+    - 'PLAYER_ID'
+    - 'PLAYER_NAME'
+    - 'SEASON'
+  IGNORE_KEYS: ["TEAM_ABBREVIATION","AGE","GP","W","L","W_PCT","MIN","FGM","FGA","FG_PCT","FG3M","FG3A","FG3_PCT","FTM","FTA","FT_PCT","OREB","DREB","REB","AST","TOV","STL","BLK","BLKA","PF","PFD","PTS","PLUS_MINUS", "NBA_FANTASY_PTS", "DD2","TD3","GP_RANK","W_RANK","L_RANK","W_PCT_RANK","MIN_RANK","FGM_RANK","FGA_RANK","FG_PCT_RANK","FG3M_RANK","FG3A_RANK","FG3_PCT_RANK","FTM_RANK","FTA_RANK","FT_PCT_RANK","OREB_RANK","DREB_RANK","REB_RANK","AST_RANK","TOV_RANK","STL_RANK","BLK_RANK","BLKA_RANK","PF_RANK","PFD_RANK","PTS_RANK","PLUS_MINUS_RANK", "NBA_FANTASY_PTS_RANK", "DD2_RANK","TD3_RANK","CFID","CFPARAMS"]
+  DAILY_SCRAPE: True
+
+
+- DATA_NAME: 'game_dates'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=10000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=T&Season={SEASON}&SeasonType=Regular+Season&Sorter=DATE'
+  PRIMARY_KEYS:
+    - 'GAME_DATE'
+    - 'SEASON'
+  IGNORE_KEYS: ["SEASON_ID", "TEAM_ID", "TEAM_ABBREVIATION", "TEAM_NAME", "GAME_ID", "MATCHUP", "WL", "MIN", "FGM", "FGA", "FG_PCT", "FG3M", "FG3A", "FG3_PCT", "FTM", "FTA", "FT_PCT", "OREB", "DREB", "REB", "AST", "STL", "BLK", "TOV", "PF", "PTS", "PLUS_MINUS", "VIDEO_AVAILABLE"]
+  DAILY_SCRAPE: True
+
+
 - DATA_NAME: 'player_logs'
-  API_ENDPOINT: 'http://stats.nba.com/stats/leaguegamelog?Counter=100000&DateFrom=&DateTo=&Direction=DESC&LeagueID=00&PlayerOrTeam=P&Season={SEASON}&SeasonType=Regular+Season&Sorter=DATE'
+  API_ENDPOINT: 'http://stats.nba.com/stats/playergamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
   PRIMARY_KEYS:
     - 'PLAYER_ID'
     - 'GAME_DATE'
@@ -49,7 +68,26 @@
     - 'TEAM_ID'
     - 'SEASON'
     - 'DATE_TO'
-  DAILY_SCRAPE: True
+  DAILY_SCRAPE: False
+
+
+- DATA_NAME: 'general_team_stats_opponent_vs_pos'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashteamstats?Conference=&DateFrom=&DateTo={DATE_TO}&Division=&GameScope=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Opponent&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition={PLAYER_POSITION}&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision='
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'SEASON'
+    - 'DATE_TO'
+    - 'PLAYER_POSITION'
+  DAILY_SCRAPE: False
+
+
+- DATA_NAME: 'general_team_stats'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashteamstats?Conference=&DateFrom=&DateTo={DATE_TO}&Division=&GameScope=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision='
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'SEASON'
+    - 'DATE_TO'
+  DAILY_SCRAPE: False
 
 
 - DATA_NAME: 'general_traditional_player_stats'
@@ -58,7 +96,16 @@
     - 'PLAYER_ID'
     - 'SEASON'
     - 'DATE_TO'
-  DAILY_SCRAPE: True
+  DAILY_SCRAPE: False
+
+
+- DATA_NAME: 'general_traditional_player_stats_pace_adjusted'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo={DATE_TO}&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Per100Possessions&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
+  PRIMARY_KEYS:
+    - 'PLAYER_ID'
+    - 'SEASON'
+    - 'DATE_TO'
+  DAILY_SCRAPE: False
 
 
 - DATA_NAME: 'player_positions'
@@ -77,4 +124,4 @@
     - 'GAME_ID'
     - 'SEASON'
     - 'PLAYER_ID'
-  DAILY_SCRAPE: True
+  DAILY_SCRAPE: False

@@ -53,17 +53,20 @@ def run_daily_scrapes(path_to_api_requests: str):
     Runs all of the daily scrape jobs specified in the
     yaml file at the given path.
     """
+    SCRAPER_CONFIG.SEASONS = [SCRAPER_CONFIG.CURRENT_SEASON]
+    SCRAPER_CONFIG.DAILY = True
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
-            if api_request['DAILY_SCRAPE']:
-                print('Running the current request:')
-                pprint.pprint(api_request, indent=2)
-                ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
-                general_scraper(api_request['API_ENDPOINT'],
-                                api_request['DATA_NAME'],
-                                api_request['PRIMARY_KEYS'],
-                                ignore_keys)
+            overwrite_scrape = api_request['DAILY_SCRAPE']
+            print('Running the current request:')
+            pprint.pprint(api_request, indent=2)
+            ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
+            general_scraper(api_request['API_ENDPOINT'],
+                            api_request['DATA_NAME'],
+                            api_request['PRIMARY_KEYS'],
+                            ignore_keys=ignore_keys,
+                            overwrite=overwrite_scrape)
 
 
 class NBAResponse():
@@ -261,7 +264,16 @@ class FillableAPIRequest():
             elif fillable_type == '{GAME_DATE}':
                 values = db.retrieve.fetch_game_dates()
             elif fillable_type == '{DATE_TO}':
-                values = db.retrieve.fetch_game_dates(day_before=True, format_api_request=True)
+                values = db.retrieve.fetch_game_dates()
+                for season in values:
+                    for i in range(len(values[season])):
+                        game_date = values[season][i]
+                        date_before = get_date_before(game_date)
+                        values[season][i] = format_date_for_api_request(date_before)
+                if SCRAPER_CONFIG.DAILY:
+                    today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
+                    values[SCRAPER_CONFIG.CURRENT_SEASON].append(
+                        format_date_for_api_request(get_date_before(today_date)))
             elif fillable_type == '{GAME_ID}':
                 values = db.retrieve.fetch_game_ids()
             elif fillable_type == '{PLAYER_POSITION}':
@@ -291,7 +303,7 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         return api_request.get_api_request_str()
 
 
-def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set()):
+def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set(), overwrite=False):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -310,24 +322,19 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     - team_id
     """
 
+    print(data_name)
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
     if SCRAPER_CONFIG.VERBOSE:
         print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
 
-        if db.request_logger.already_scraped(api_request.get_api_request_str()):
-            if api_request.get_season() == SCRAPER_CONFIG.CURRENT_SEASON:
-                if SCRAPER_CONFIG.MINIMIZE_SCRAPES:
-                    api_request_str = minimize_api_scrape(api_request)
-                else:
-                    api_request_str = api_request.get_api_request_str()
-            else:
-                if SCRAPER_CONFIG.VERBOSE:
-                    print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
-                continue
-        else:
+        if overwrite or not db.request_logger.already_scraped(api_request.get_api_request_str()):
             api_request_str = api_request.get_api_request_str()
+        else:
+            if SCRAPER_CONFIG.VERBOSE:
+                print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
+            continue
 
         print(api_request)
 

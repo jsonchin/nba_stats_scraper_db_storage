@@ -19,13 +19,25 @@ def execute_sql(sql, params=()):
 
     Returns a DB_Query.
     """
+    con = get_db_connection()
+    result = execute_sql_persist(sql, con, params)
+    close_db_connection(con)
+    return result
+
+
+def execute_sql_persist(sql, con, params=()):
+    """
+    Executes sql like "execute_sql" but takes in a
+    connection and does not close the connection.
+
+    This is useful for creating temporary tables
+    that will be persisted across a connection.
+    """
     if type(params) != tuple and type(params) != list:
         params = (params, )
-    con = get_db_connection()
     cur = con.execute(sql, params)
     results = cur.fetchall()
     column_names = [description[0] for description in cur.description] if cur.description is not None else None
-    close_db_connection(con)
     return DB_Query(column_names, results)
 
 
@@ -94,11 +106,18 @@ def execute_sql_file(file_name):
     """
     Executes sql in the given file.
     """
+    con = get_db_connection()
+    execute_sql_file_persist(file_name, con)
+    close_db_connection(con)
+
+
+def execute_sql_file_persist(file_name, con):
+    """
+    Executes sql in the given file.
+    """
     with open(file_name, 'r') as f:
-        con = get_db_connection()
         for cmd in f.read().split(';'):
             con.execute(cmd)
-        close_db_connection(con)
 
 
 def get_db_connection():
