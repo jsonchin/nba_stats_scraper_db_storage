@@ -106,11 +106,18 @@ def execute_sql_file(file_name):
     """
     Executes sql in the given file.
     """
+    con = get_db_connection()
+    execute_sql_file_persist(file_name, con)
+    close_db_connection(con)
+
+
+def execute_sql_file_persist(file_name, con):
+    """
+    Executes sql in the given file.
+    """
     with open(file_name, 'r') as f:
-        con = get_db_connection()
         for cmd in f.read().split(';'):
             con.execute(cmd)
-        close_db_connection(con)
 
 
 def get_db_connection():
