@@ -102,22 +102,22 @@ def get_table_names():
     return [l[0] for l in execute_sql("""SELECT name FROM sqlite_master WHERE type='table';""").rows]
 
 
-def execute_sql_file(file_name):
+def execute_sql_file(file_name, input_con=None):
     """
     Executes sql in the given file.
     """
-    con = get_db_connection()
-    execute_sql_file_persist(file_name, con)
-    close_db_connection(con)
-
-
-def execute_sql_file_persist(file_name, con):
-    """
-    Executes sql in the given file.
-    """
+    if input_con is None:
+        con = get_db_connection()
+    else:
+        con = input_con
     with open(file_name, 'r') as f:
         for cmd in f.read().split(';'):
             con.execute(cmd)
+        # close the con if it was created by this function
+        if input_con is None:
+            close_db_connection(con)
+
+execute_sql_file_persist = execute_sql
 
 
 def get_db_connection():
