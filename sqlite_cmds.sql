@@ -13,6 +13,15 @@ CREATE VIEW general_team_stats_opponent_abbrevs AS
                     general_team_stats_opponent.SEASON = team_abbreviations.SEASON
                     AND general_team_stats_opponent.TEAM_ID = team_abbreviations.TEAM_ID;
 
+DROP VIEW IF EXISTS general_team_stats_abbrevs;
+CREATE VIEW general_team_stats_abbrevs AS
+    SELECT general_team_stats.*, TEAM_ABBREVIATION
+        FROM general_team_stats
+            INNER JOIN team_abbreviations
+                ON
+                    general_team_stats.SEASON = team_abbreviations.SEASON
+                    AND general_team_stats.TEAM_ID = team_abbreviations.TEAM_ID;
+
 DROP VIEW IF EXISTS yesterday_date_map;
 CREATE VIEW yesterday_date_map AS
     SELECT p_log1.SEASON AS SEASON,
@@ -126,8 +135,10 @@ CREATE TABLE dnp_stats_by_position AS
         COALESCE(SUM(p_avg_stats_dnp.PTS), 0) AS DNP_PTS,
         COALESCE(SUM(p_avg_stats_dnp.PLUS_MINUS), 0) AS DNP_PLUS_MINUS,
         COALESCE(SUM(p_avg_stats_dnp.NBA_FANTASY_PTS), 0) AS DNP_NBA_FANTASY_PTS,
-        COALESCE(SUM(p_avg_stats_dnp.DD2), 0) AS DNP_DD2,
-        COALESCE(SUM(p_avg_stats_dnp.TD3), 0) AS DNP_TD3,
+        COALESCE(SUM(p_avg_stats_dnp.DD2), 0) AS TOTAL_DNP_DD2,
+        COALESCE(SUM(p_avg_stats_dnp.TD3), 0) AS TOTAL_DNP_TD3,
+        COALESCE(SUM(p_avg_stats_dnp.DD2) * 1.0  / SUM(p_avg_stats_dnp.GP), 0) AS DNP_DD2,
+        COALESCE(SUM(p_avg_stats_dnp.TD3) * 1.0  / SUM(p_avg_stats_dnp.GP), 0) AS DNP_TD3,
         dnp.GAME_ID AS GAME_ID,
         dnp.TEAM_ID AS TEAM_ID,
         dnp.SEASON AS SEASON,
@@ -172,8 +183,10 @@ CREATE TABLE dnp_stats AS
         COALESCE(SUM(p_avg_stats_dnp.PTS), 0) AS DNP_PTS,
         COALESCE(SUM(p_avg_stats_dnp.PLUS_MINUS), 0) AS DNP_PLUS_MINUS,
         COALESCE(SUM(p_avg_stats_dnp.NBA_FANTASY_PTS), 0) AS DNP_NBA_FANTASY_PTS,
-        COALESCE(SUM(p_avg_stats_dnp.DD2), 0) AS DNP_DD2,
-        COALESCE(SUM(p_avg_stats_dnp.TD3), 0) AS DNP_TD3,
+        COALESCE(SUM(p_avg_stats_dnp.DD2), 0) AS TOTAL_DNP_DD2,
+        COALESCE(SUM(p_avg_stats_dnp.TD3), 0) AS TOTAL_DNP_TD3,
+        COALESCE(SUM(p_avg_stats_dnp.DD2) * 1.0  / SUM(p_avg_stats_dnp.GP), 0) AS DNP_DD2,
+        COALESCE(SUM(p_avg_stats_dnp.TD3) * 1.0  / SUM(p_avg_stats_dnp.GP), 0) AS DNP_TD3,
         dnp.GAME_ID AS GAME_ID,
         dnp.TEAM_ID AS TEAM_ID,
         dnp.SEASON AS SEASON
@@ -186,3 +199,114 @@ CREATE TABLE dnp_stats AS
             dnp.SEASON,
             dnp.GAME_ID,
             dnp.TEAM_ID;
+
+
+
+CREATE TEMP TABLE PLAYER_INJURED_PLAYER AS
+    SELECT p_log.*, dnp.PLAYER_ID AS INJURED_PLAYER_ID FROM PLAYER_LOGS AS p_log
+        INNER JOIN DID_NOT_PLAY AS dnp
+            ON p_log.GAME_ID = dnp.GAME_ID
+                AND p_log.TEAM_ID = dnp.TEAM_ID
+                AND dnp.PLAYER_ID IS NOT NULL;
+
+CREATE TEMP TABLE AVG_PLAYER_WHEN_PLAYER_INJURED AS
+    SELECT AVG(player_injured_pairs.MIN) AS AVG_INJURED_MIN,
+            AVG(player_injured_pairs.FGM) AS AVG_INJURED_FGM,
+            AVG(player_injured_pairs.FGA) AS AVG_INJURED_FGA,
+            AVG(player_injured_pairs.FG_PCT) AS AVG_INJURED_FG_PCT,
+            AVG(player_injured_pairs.FG3M) AS AVG_INJURED_FG3M,
+            AVG(player_injured_pairs.FG3A) AS AVG_INJURED_FG3A,
+            AVG(player_injured_pairs.FG3_PCT) AS AVG_INJURED_FG3_PCT,
+            AVG(player_injured_pairs.FTM) AS AVG_INJURED_FTM,
+            AVG(player_injured_pairs.FTA) AS AVG_INJURED_FTA,
+            AVG(player_injured_pairs.FT_PCT) AS AVG_INJURED_FT_PCT,
+            AVG(player_injured_pairs.OREB) AS AVG_INJURED_OREB,
+            AVG(player_injured_pairs.DREB) AS AVG_INJURED_DREB,
+            AVG(player_injured_pairs.REB) AS AVG_INJURED_REB,
+            AVG(player_injured_pairs.AST) AS AVG_INJURED_AST,
+            AVG(player_injured_pairs.TOV) AS AVG_INJURED_TOV,
+            AVG(player_injured_pairs.STL) AS AVG_INJURED_STL,
+            AVG(player_injured_pairs.BLK) AS AVG_INJURED_BLK,
+            AVG(player_injured_pairs.BLKA) AS AVG_INJURED_BLKA,
+            AVG(player_injured_pairs.PF) AS AVG_INJURED_PF,
+            AVG(player_injured_pairs.PFD) AS AVG_INJURED_PFD,
+            AVG(player_injured_pairs.PTS) AS AVG_INJURED_PTS,
+            AVG(player_injured_pairs.PLUS_MINUS) AS AVG_INJURED_PLUS_MINUS,
+            AVG(player_injured_pairs.NBA_FANTASY_PTS) AS AVG_INJURED_NBA_FANTASY_PTS,
+            AVG(player_injured_pairs.DD2) AS AVG_INJURED_DD2,
+            AVG(player_injured_pairs.TD3) AS AVG_INJURED_TD3,
+            COUNT(*) AS NUM_GAMES_PLAYED_WITH_INJURED,
+            p_log.PLAYER_ID AS PLAYER_ID,
+            player_injured_pairs.INJURED_PLAYER_ID AS INJURED_PLAYER_ID,
+            p_log.GAME_DATE AS GAME_DATE,
+            p_log.SEASON AS SEASON
+
+    FROM PLAYER_LOGS AS p_log
+        INNER JOIN PLAYER_INJURED_PLAYER AS player_injured_pairs
+            ON p_log.SEASON = player_injured_pairs.SEASON
+                AND p_log.PLAYER_ID = player_injured_pairs.PLAYER_ID
+                AND p_log.GAME_DATE > player_injured_pairs.GAME_DATE
+        GROUP BY p_log.PLAYER_ID, player_injured_pairs.INJURED_PLAYER_ID,
+                p_log.SEASON, p_log.GAME_DATE;
+
+CREATE TEMP TABLE AVG_PLAYER_INJURED AS
+    SELECT AVG(AVG_INJURED_MIN) AS AVG_INJURED_MIN,
+        AVG(AVG_INJURED_FGM) AS AVG_INJURED_FGM,
+        AVG(AVG_INJURED_FGA) AS AVG_INJURED_FGA,
+        AVG(AVG_INJURED_FG_PCT) AS AVG_INJURED_FG_PCT,
+        AVG(AVG_INJURED_FG3M) AS AVG_INJURED_FG3M,
+        AVG(AVG_INJURED_FG3A) AS AVG_INJURED_FG3A,
+        AVG(AVG_INJURED_FG3_PCT) AS AVG_INJURED_FG3_PCT,
+        AVG(AVG_INJURED_FTM) AS AVG_INJURED_FTM,
+        AVG(AVG_INJURED_FTA) AS AVG_INJURED_FTA,
+        AVG(AVG_INJURED_FT_PCT) AS AVG_INJURED_FT_PCT,
+        AVG(AVG_INJURED_OREB) AS AVG_INJURED_OREB,
+        AVG(AVG_INJURED_DREB) AS AVG_INJURED_DREB,
+        AVG(AVG_INJURED_REB) AS AVG_INJURED_REB,
+        AVG(AVG_INJURED_AST) AS AVG_INJURED_AST,
+        AVG(AVG_INJURED_TOV) AS AVG_INJURED_TOV,
+        AVG(AVG_INJURED_STL) AS AVG_INJURED_STL,
+        AVG(AVG_INJURED_BLK) AS AVG_INJURED_BLK,
+        AVG(AVG_INJURED_BLKA) AS AVG_INJURED_BLKA,
+        AVG(AVG_INJURED_PF) AS AVG_INJURED_PF,
+        AVG(AVG_INJURED_PFD) AS AVG_INJURED_PFD,
+        AVG(AVG_INJURED_PTS) AS AVG_INJURED_PTS,
+        AVG(AVG_INJURED_PLUS_MINUS) AS AVG_INJURED_PLUS_MINUS,
+        AVG(AVG_INJURED_NBA_FANTASY_PTS) AS AVG_INJURED_NBA_FANTASY_PTS,
+        AVG(AVG_INJURED_DD2) AS AVG_INJURED_DD2,
+        AVG(AVG_INJURED_TD3) AS AVG_INJURED_TD3,
+        PLAYER_ID, GAME_DATE, SEASON
+    FROM AVG_PLAYER_WHEN_PLAYER_INJURED
+        GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE MAX_PLAYER_INJURIES AS
+    SELECT
+        MAX(AVG_INJURED_MIN) AS MAX_INJURED_MIN,
+        MAX(AVG_INJURED_FGM) AS MAX_INJURED_FGM,
+        MAX(AVG_INJURED_FGA) AS MAX_INJURED_FGA,
+        MAX(AVG_INJURED_FG_PCT) AS MAX_INJURED_FG_PCT,
+        MAX(AVG_INJURED_FG3M) AS MAX_INJURED_FG3M,
+        MAX(AVG_INJURED_FG3A) AS MAX_INJURED_FG3A,
+        MAX(AVG_INJURED_FG3_PCT) AS MAX_INJURED_FG3_PCT,
+        MAX(AVG_INJURED_FTM) AS MAX_INJURED_FTM,
+        MAX(AVG_INJURED_FTA) AS MAX_INJURED_FTA,
+        MAX(AVG_INJURED_FT_PCT) AS MAX_INJURED_FT_PCT,
+        MAX(AVG_INJURED_OREB) AS MAX_INJURED_OREB,
+        MAX(AVG_INJURED_DREB) AS MAX_INJURED_DREB,
+        MAX(AVG_INJURED_REB) AS MAX_INJURED_REB,
+        MAX(AVG_INJURED_AST) AS MAX_INJURED_AST,
+        MAX(AVG_INJURED_TOV) AS MAX_INJURED_TOV,
+        MAX(AVG_INJURED_STL) AS MAX_INJURED_STL,
+        MAX(AVG_INJURED_BLK) AS MAX_INJURED_BLK,
+        MAX(AVG_INJURED_BLKA) AS MAX_INJURED_BLKA,
+        MAX(AVG_INJURED_PF) AS MAX_INJURED_PF,
+        MAX(AVG_INJURED_PFD) AS MAX_INJURED_PFD,
+        MAX(AVG_INJURED_PTS) AS MAX_INJURED_PTS,
+        MAX(AVG_INJURED_PLUS_MINUS) AS MAX_INJURED_PLUS_MINUS,
+        MAX(AVG_INJURED_NBA_FANTASY_PTS) AS MAX_INJURED_NBA_FANTASY_PTS,
+        MAX(AVG_INJURED_DD2) AS MAX_INJURED_DD2,
+        MAX(AVG_INJURED_TD3) AS MAX_INJURED_TD3,
+        PLAYER_ID, GAME_DATE, SEASON
+
+    FROM AVG_PLAYER_WHEN_PLAYER_INJURED
+        GROUP BY PLAYER_ID, GAME_DATE, SEASON;
