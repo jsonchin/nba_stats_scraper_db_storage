@@ -201,112 +201,413 @@ CREATE TABLE dnp_stats AS
             dnp.TEAM_ID;
 
 
+CREATE TEMP TABLE SIGNIFICANT_DID_NOT_PLAY AS
+            SELECT
+                dnp.*
+            FROM DID_NOT_PLAY AS dnp
+                INNER JOIN GENERAL_TRADITIONAL_PLAYER_STATS AS p_avg_stats
+                    ON p_avg_stats.PLAYER_ID = dnp.PLAYER_ID
+                        AND p_avg_stats.SEASON = dnp.SEASON
+                        AND p_avg_stats.DATE_TO = DATE(dnp.GAME_DATE, '-1 day')
+                        AND dnp.PLAYER_ID IS NOT NULL
+                        AND p_avg_stats.MIN > 0;
 
-CREATE TEMP TABLE PLAYER_INJURED_PLAYER AS
-    SELECT p_log.*, dnp.PLAYER_ID AS INJURED_PLAYER_ID FROM PLAYER_LOGS AS p_log
-        INNER JOIN DID_NOT_PLAY AS dnp
-            ON p_log.GAME_ID = dnp.GAME_ID
-                AND p_log.TEAM_ID = dnp.TEAM_ID
-                AND dnp.PLAYER_ID IS NOT NULL;
+CREATE TEMP TABLE PLAYER_OFF_PLAYER AS
+            SELECT
+                p_log.SEASON, p_log.GAME_ID, p_log.TEAM_ID, p_log.GAME_DATE AS GAME_DATE,
+                p_log.PLAYER_ID, dnp.PLAYER_ID AS INJURED_PLAYER_ID
 
-CREATE TEMP TABLE AVG_PLAYER_WHEN_PLAYER_INJURED AS
-    SELECT AVG(player_injured_pairs.MIN) AS AVG_INJURED_MIN,
-            AVG(player_injured_pairs.FGM) AS AVG_INJURED_FGM,
-            AVG(player_injured_pairs.FGA) AS AVG_INJURED_FGA,
-            AVG(player_injured_pairs.FG_PCT) AS AVG_INJURED_FG_PCT,
-            AVG(player_injured_pairs.FG3M) AS AVG_INJURED_FG3M,
-            AVG(player_injured_pairs.FG3A) AS AVG_INJURED_FG3A,
-            AVG(player_injured_pairs.FG3_PCT) AS AVG_INJURED_FG3_PCT,
-            AVG(player_injured_pairs.FTM) AS AVG_INJURED_FTM,
-            AVG(player_injured_pairs.FTA) AS AVG_INJURED_FTA,
-            AVG(player_injured_pairs.FT_PCT) AS AVG_INJURED_FT_PCT,
-            AVG(player_injured_pairs.OREB) AS AVG_INJURED_OREB,
-            AVG(player_injured_pairs.DREB) AS AVG_INJURED_DREB,
-            AVG(player_injured_pairs.REB) AS AVG_INJURED_REB,
-            AVG(player_injured_pairs.AST) AS AVG_INJURED_AST,
-            AVG(player_injured_pairs.TOV) AS AVG_INJURED_TOV,
-            AVG(player_injured_pairs.STL) AS AVG_INJURED_STL,
-            AVG(player_injured_pairs.BLK) AS AVG_INJURED_BLK,
-            AVG(player_injured_pairs.BLKA) AS AVG_INJURED_BLKA,
-            AVG(player_injured_pairs.PF) AS AVG_INJURED_PF,
-            AVG(player_injured_pairs.PFD) AS AVG_INJURED_PFD,
-            AVG(player_injured_pairs.PTS) AS AVG_INJURED_PTS,
-            AVG(player_injured_pairs.PLUS_MINUS) AS AVG_INJURED_PLUS_MINUS,
-            AVG(player_injured_pairs.NBA_FANTASY_PTS) AS AVG_INJURED_NBA_FANTASY_PTS,
-            AVG(player_injured_pairs.DD2) AS AVG_INJURED_DD2,
-            AVG(player_injured_pairs.TD3) AS AVG_INJURED_TD3,
-            COUNT(*) AS NUM_GAMES_PLAYED_WITH_INJURED,
-            p_log.PLAYER_ID AS PLAYER_ID,
-            player_injured_pairs.INJURED_PLAYER_ID AS INJURED_PLAYER_ID,
-            p_log.GAME_DATE AS GAME_DATE,
-            p_log.SEASON AS SEASON
+            FROM PLAYER_LOGS AS p_log
+                INNER JOIN SIGNIFICANT_DID_NOT_PLAY AS dnp
+                    ON p_log.GAME_ID = dnp.GAME_ID
+                        AND p_log.SEASON = p_log.SEASON
+                        AND p_log.TEAM_ID = dnp.TEAM_ID
+                        AND dnp.PLAYER_ID IS NOT NULL;
 
-    FROM PLAYER_LOGS AS p_log
-        INNER JOIN PLAYER_INJURED_PLAYER AS player_injured_pairs
-            ON p_log.SEASON = player_injured_pairs.SEASON
-                AND p_log.PLAYER_ID = player_injured_pairs.PLAYER_ID
-                AND p_log.GAME_DATE > player_injured_pairs.GAME_DATE
-        GROUP BY p_log.PLAYER_ID, player_injured_pairs.INJURED_PLAYER_ID,
-                p_log.SEASON, p_log.GAME_DATE;
+CREATE TEMP TABLE PLAYER_INJURED_FOR_TEAM AS
+            SELECT SEASON, TEAM_ID, PLAYER_ID, GAME_ID
+                FROM SIGNIFICANT_DID_NOT_PLAY
+                WHERE PLAYER_ID IS NOT NULL
+                GROUP BY SEASON, TEAM_ID, PLAYER_ID;
 
-CREATE TEMP TABLE AVG_PLAYER_INJURED AS
-    SELECT AVG(AVG_INJURED_MIN) AS AVG_INJURED_MIN,
-        AVG(AVG_INJURED_FGM) AS AVG_INJURED_FGM,
-        AVG(AVG_INJURED_FGA) AS AVG_INJURED_FGA,
-        AVG(AVG_INJURED_FG_PCT) AS AVG_INJURED_FG_PCT,
-        AVG(AVG_INJURED_FG3M) AS AVG_INJURED_FG3M,
-        AVG(AVG_INJURED_FG3A) AS AVG_INJURED_FG3A,
-        AVG(AVG_INJURED_FG3_PCT) AS AVG_INJURED_FG3_PCT,
-        AVG(AVG_INJURED_FTM) AS AVG_INJURED_FTM,
-        AVG(AVG_INJURED_FTA) AS AVG_INJURED_FTA,
-        AVG(AVG_INJURED_FT_PCT) AS AVG_INJURED_FT_PCT,
-        AVG(AVG_INJURED_OREB) AS AVG_INJURED_OREB,
-        AVG(AVG_INJURED_DREB) AS AVG_INJURED_DREB,
-        AVG(AVG_INJURED_REB) AS AVG_INJURED_REB,
-        AVG(AVG_INJURED_AST) AS AVG_INJURED_AST,
-        AVG(AVG_INJURED_TOV) AS AVG_INJURED_TOV,
-        AVG(AVG_INJURED_STL) AS AVG_INJURED_STL,
-        AVG(AVG_INJURED_BLK) AS AVG_INJURED_BLK,
-        AVG(AVG_INJURED_BLKA) AS AVG_INJURED_BLKA,
-        AVG(AVG_INJURED_PF) AS AVG_INJURED_PF,
-        AVG(AVG_INJURED_PFD) AS AVG_INJURED_PFD,
-        AVG(AVG_INJURED_PTS) AS AVG_INJURED_PTS,
-        AVG(AVG_INJURED_PLUS_MINUS) AS AVG_INJURED_PLUS_MINUS,
-        AVG(AVG_INJURED_NBA_FANTASY_PTS) AS AVG_INJURED_NBA_FANTASY_PTS,
-        AVG(AVG_INJURED_DD2) AS AVG_INJURED_DD2,
-        AVG(AVG_INJURED_TD3) AS AVG_INJURED_TD3,
-        PLAYER_ID, GAME_DATE, SEASON
-    FROM AVG_PLAYER_WHEN_PLAYER_INJURED
-        GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+CREATE TEMP TABLE PLAYER_BOTH_ON_OFF_PLAYER AS
+            SELECT
+                p_log.SEASON, p_log.GAME_ID, p_log.TEAM_ID, p_log.GAME_DATE AS GAME_DATE,
+                p_log.PLAYER_ID, dnp.PLAYER_ID AS INJURED_PLAYER_ID
+            FROM PLAYER_LOGS AS p_log
+                INNER JOIN PLAYER_INJURED_FOR_TEAM AS dnp
+                    ON p_log.SEASON = dnp.SEASON
+                        AND p_log.TEAM_ID = dnp.TEAM_ID;
 
-CREATE TEMP TABLE MAX_PLAYER_INJURIES AS
-    SELECT
-        MAX(AVG_INJURED_MIN) AS MAX_INJURED_MIN,
-        MAX(AVG_INJURED_FGM) AS MAX_INJURED_FGM,
-        MAX(AVG_INJURED_FGA) AS MAX_INJURED_FGA,
-        MAX(AVG_INJURED_FG_PCT) AS MAX_INJURED_FG_PCT,
-        MAX(AVG_INJURED_FG3M) AS MAX_INJURED_FG3M,
-        MAX(AVG_INJURED_FG3A) AS MAX_INJURED_FG3A,
-        MAX(AVG_INJURED_FG3_PCT) AS MAX_INJURED_FG3_PCT,
-        MAX(AVG_INJURED_FTM) AS MAX_INJURED_FTM,
-        MAX(AVG_INJURED_FTA) AS MAX_INJURED_FTA,
-        MAX(AVG_INJURED_FT_PCT) AS MAX_INJURED_FT_PCT,
-        MAX(AVG_INJURED_OREB) AS MAX_INJURED_OREB,
-        MAX(AVG_INJURED_DREB) AS MAX_INJURED_DREB,
-        MAX(AVG_INJURED_REB) AS MAX_INJURED_REB,
-        MAX(AVG_INJURED_AST) AS MAX_INJURED_AST,
-        MAX(AVG_INJURED_TOV) AS MAX_INJURED_TOV,
-        MAX(AVG_INJURED_STL) AS MAX_INJURED_STL,
-        MAX(AVG_INJURED_BLK) AS MAX_INJURED_BLK,
-        MAX(AVG_INJURED_BLKA) AS MAX_INJURED_BLKA,
-        MAX(AVG_INJURED_PF) AS MAX_INJURED_PF,
-        MAX(AVG_INJURED_PFD) AS MAX_INJURED_PFD,
-        MAX(AVG_INJURED_PTS) AS MAX_INJURED_PTS,
-        MAX(AVG_INJURED_PLUS_MINUS) AS MAX_INJURED_PLUS_MINUS,
-        MAX(AVG_INJURED_NBA_FANTASY_PTS) AS MAX_INJURED_NBA_FANTASY_PTS,
-        MAX(AVG_INJURED_DD2) AS MAX_INJURED_DD2,
-        MAX(AVG_INJURED_TD3) AS MAX_INJURED_TD3,
-        PLAYER_ID, GAME_DATE, SEASON
+CREATE TEMP TABLE PLAYER_ON_PLAYER AS
 
-    FROM AVG_PLAYER_WHEN_PLAYER_INJURED
-        GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+    SELECT *
+        FROM PLAYER_BOTH_ON_OFF_PLAYER
+        EXCEPT
+            SELECT * FROM PLAYER_OFF_PLAYER;
+DROP TABLE PLAYER_BOTH_ON_OFF_PLAYER;
+
+CREATE TEMP TABLE PLAYER_OFF_PLAYER_STATS AS
+            SELECT
+                p_log.*, p_off.INJURED_PLAYER_ID
+
+            FROM PLAYER_OFF_PLAYER AS p_off
+                INNER JOIN PLAYER_LOGS AS p_log
+                    ON p_off.SEASON = p_log.SEASON
+                        AND p_off.PLAYER_ID = p_log.PLAYER_ID
+                        AND p_off.GAME_ID = p_log.GAME_ID;
+DROP TABLE PLAYER_OFF_PLAYER;
+
+CREATE TEMP TABLE PLAYER_ON_PLAYER_STATS AS
+            SELECT
+                p_log.*, p_on.INJURED_PLAYER_ID
+
+            FROM PLAYER_ON_PLAYER AS p_on
+                INNER JOIN PLAYER_LOGS AS p_log
+                    ON p_on.SEASON = p_log.SEASON
+                        AND p_on.PLAYER_ID = p_log.PLAYER_ID
+                        AND p_on.GAME_ID = p_log.GAME_ID;
+DROP TABLE PLAYER_ON_PLAYER;
+
+CREATE TEMP TABLE AVG_PLAYER_WHEN_PLAYER_OFF AS
+            SELECT AVG(player_injured_pairs.MIN) AS AVG_OFF_MIN,
+                    AVG(player_injured_pairs.FGM) AS AVG_OFF_FGM,
+                    AVG(player_injured_pairs.FGA) AS AVG_OFF_FGA,
+                    AVG(player_injured_pairs.FG_PCT) AS AVG_OFF_FG_PCT,
+                    AVG(player_injured_pairs.FG3M) AS AVG_OFF_FG3M,
+                    AVG(player_injured_pairs.FG3A) AS AVG_OFF_FG3A,
+                    AVG(player_injured_pairs.FG3_PCT) AS AVG_OFF_FG3_PCT,
+                    AVG(player_injured_pairs.FTM) AS AVG_OFF_FTM,
+                    AVG(player_injured_pairs.FTA) AS AVG_OFF_FTA,
+                    AVG(player_injured_pairs.FT_PCT) AS AVG_OFF_FT_PCT,
+                    AVG(player_injured_pairs.OREB) AS AVG_OFF_OREB,
+                    AVG(player_injured_pairs.DREB) AS AVG_OFF_DREB,
+                    AVG(player_injured_pairs.REB) AS AVG_OFF_REB,
+                    AVG(player_injured_pairs.AST) AS AVG_OFF_AST,
+                    AVG(player_injured_pairs.TOV) AS AVG_OFF_TOV,
+                    AVG(player_injured_pairs.STL) AS AVG_OFF_STL,
+                    AVG(player_injured_pairs.BLK) AS AVG_OFF_BLK,
+                    AVG(player_injured_pairs.BLKA) AS AVG_OFF_BLKA,
+                    AVG(player_injured_pairs.PF) AS AVG_OFF_PF,
+                    AVG(player_injured_pairs.PFD) AS AVG_OFF_PFD,
+                    AVG(player_injured_pairs.PTS) AS AVG_OFF_PTS,
+                    AVG(player_injured_pairs.PLUS_MINUS) AS AVG_OFF_PLUS_MINUS,
+                    AVG(player_injured_pairs.NBA_FANTASY_PTS) AS AVG_OFF_NBA_FANTASY_PTS,
+                    AVG(player_injured_pairs.DD2) AS AVG_OFF_DD2,
+                    AVG(player_injured_pairs.TD3) AS AVG_OFF_TD3,
+                    COUNT(*) AS NUM_GAMES_PLAYED_WITH_INJURED,
+                    p_log.PLAYER_ID AS PLAYER_ID,
+                    player_injured_pairs.INJURED_PLAYER_ID AS INJURED_PLAYER_ID,
+                    p_log.GAME_DATE AS GAME_DATE,
+                    p_log.SEASON AS SEASON
+
+            FROM PLAYER_OFF_PLAYER_STATS AS p_log
+                INNER JOIN PLAYER_OFF_PLAYER_STATS AS player_injured_pairs
+                    ON p_log.SEASON = player_injured_pairs.SEASON
+                        AND p_log.TEAM_ID = player_injured_pairs.TEAM_ID
+                        AND p_log.PLAYER_ID = player_injured_pairs.PLAYER_ID
+                        AND p_log.GAME_DATE > player_injured_pairs.GAME_DATE
+                        AND p_log.INJURED_PLAYER_ID = player_injured_pairs.INJURED_PLAYER_ID
+                GROUP BY p_log.PLAYER_ID, player_injured_pairs.INJURED_PLAYER_ID,
+                        p_log.SEASON, p_log.TEAM_ID, p_log.GAME_DATE;
+
+CREATE TEMP TABLE AVG_PLAYER_WHEN_PLAYER_ON AS
+            SELECT AVG(player_injured_pairs.MIN) AS AVG_ON_MIN,
+                    AVG(player_injured_pairs.FGM) AS AVG_ON_FGM,
+                    AVG(player_injured_pairs.FGA) AS AVG_ON_FGA,
+                    AVG(player_injured_pairs.FG_PCT) AS AVG_ON_FG_PCT,
+                    AVG(player_injured_pairs.FG3M) AS AVG_ON_FG3M,
+                    AVG(player_injured_pairs.FG3A) AS AVG_ON_FG3A,
+                    AVG(player_injured_pairs.FG3_PCT) AS AVG_ON_FG3_PCT,
+                    AVG(player_injured_pairs.FTM) AS AVG_ON_FTM,
+                    AVG(player_injured_pairs.FTA) AS AVG_ON_FTA,
+                    AVG(player_injured_pairs.FT_PCT) AS AVG_ON_FT_PCT,
+                    AVG(player_injured_pairs.OREB) AS AVG_ON_OREB,
+                    AVG(player_injured_pairs.DREB) AS AVG_ON_DREB,
+                    AVG(player_injured_pairs.REB) AS AVG_ON_REB,
+                    AVG(player_injured_pairs.AST) AS AVG_ON_AST,
+                    AVG(player_injured_pairs.TOV) AS AVG_ON_TOV,
+                    AVG(player_injured_pairs.STL) AS AVG_ON_STL,
+                    AVG(player_injured_pairs.BLK) AS AVG_ON_BLK,
+                    AVG(player_injured_pairs.BLKA) AS AVG_ON_BLKA,
+                    AVG(player_injured_pairs.PF) AS AVG_ON_PF,
+                    AVG(player_injured_pairs.PFD) AS AVG_ON_PFD,
+                    AVG(player_injured_pairs.PTS) AS AVG_ON_PTS,
+                    AVG(player_injured_pairs.PLUS_MINUS) AS AVG_ON_PLUS_MINUS,
+                    AVG(player_injured_pairs.NBA_FANTASY_PTS) AS AVG_ON_NBA_FANTASY_PTS,
+                    AVG(player_injured_pairs.DD2) AS AVG_ON_DD2,
+                    AVG(player_injured_pairs.TD3) AS AVG_ON_TD3,
+                    COUNT(*) AS NUM_GAMES_PLAYED_WITH_INJURED,
+                    p_log.PLAYER_ID AS PLAYER_ID,
+                    player_injured_pairs.INJURED_PLAYER_ID AS INJURED_PLAYER_ID,
+                    p_log.GAME_DATE AS GAME_DATE,
+                    p_log.SEASON AS SEASON
+
+            FROM AVG_PLAYER_WHEN_PLAYER_OFF AS p_log
+                INNER JOIN PLAYER_ON_PLAYER_STATS AS player_injured_pairs
+                    ON p_log.SEASON = player_injured_pairs.SEASON
+                        AND p_log.PLAYER_ID = player_injured_pairs.PLAYER_ID
+                        AND p_log.GAME_DATE > player_injured_pairs.GAME_DATE
+                        AND p_log.INJURED_PLAYER_ID = player_injured_pairs.INJURED_PLAYER_ID
+                GROUP BY p_log.PLAYER_ID, player_injured_pairs.INJURED_PLAYER_ID,
+                        p_log.SEASON, p_log.GAME_DATE;
+
+CREATE TEMP TABLE MAX_PLAYER_OFF_DIFF AS
+        SELECT MAX(AVG_OFF_MIN) AS MAX_AVG_OFF_MIN,
+                MAX(AVG_OFF_FGM) AS MAX_AVG_OFF_FGM,
+                MAX(AVG_OFF_FGA) AS MAX_AVG_OFF_FGA,
+                MAX(AVG_OFF_FG_PCT) AS MAX_AVG_OFF_FG_PCT,
+                MAX(AVG_OFF_FG3M) AS MAX_AVG_OFF_FG3M,
+                MAX(AVG_OFF_FG3A) AS MAX_AVG_OFF_FG3A,
+                MAX(AVG_OFF_FG3_PCT) AS MAX_AVG_OFF_FG3_PCT,
+                MAX(AVG_OFF_FTM) AS MAX_AVG_OFF_FTM,
+                MAX(AVG_OFF_FTA) AS MAX_AVG_OFF_FTA,
+                MAX(AVG_OFF_FT_PCT) AS MAX_AVG_OFF_FT_PCT,
+                MAX(AVG_OFF_OREB) AS MAX_AVG_OFF_OREB,
+                MAX(AVG_OFF_DREB) AS MAX_AVG_OFF_DREB,
+                MAX(AVG_OFF_REB) AS MAX_AVG_OFF_REB,
+                MAX(AVG_OFF_AST) AS MAX_AVG_OFF_AST,
+                MAX(AVG_OFF_TOV) AS MAX_AVG_OFF_TOV,
+                MAX(AVG_OFF_STL) AS MAX_AVG_OFF_STL,
+                MAX(AVG_OFF_BLK) AS MAX_AVG_OFF_BLK,
+                MAX(AVG_OFF_BLKA) AS MAX_AVG_OFF_BLKA,
+                MAX(AVG_OFF_PF) AS MAX_AVG_OFF_PF,
+                MAX(AVG_OFF_PFD) AS MAX_AVG_OFF_PFD,
+                MAX(AVG_OFF_PTS) AS MAX_AVG_OFF_PTS,
+                MAX(AVG_OFF_PLUS_MINUS) AS MAX_AVG_OFF_PLUS_MINUS,
+                MAX(AVG_OFF_NBA_FANTASY_PTS) AS MAX_AVG_OFF_NBA_FANTASY_PTS,
+                MAX(AVG_OFF_DD2) AS MAX_AVG_OFF_DD2,
+                MAX(AVG_OFF_TD3) AS MAX_AVG_OFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_OFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE SUM_PLAYER_OFF_DIFF AS
+        SELECT SUM(AVG_OFF_MIN) AS SUM_AVG_OFF_MIN,
+                SUM(AVG_OFF_FGM) AS SUM_AVG_OFF_FGM,
+                SUM(AVG_OFF_FGA) AS SUM_AVG_OFF_FGA,
+                SUM(AVG_OFF_FG_PCT) AS SUM_AVG_OFF_FG_PCT,
+                SUM(AVG_OFF_FG3M) AS SUM_AVG_OFF_FG3M,
+                SUM(AVG_OFF_FG3A) AS SUM_AVG_OFF_FG3A,
+                SUM(AVG_OFF_FG3_PCT) AS SUM_AVG_OFF_FG3_PCT,
+                SUM(AVG_OFF_FTM) AS SUM_AVG_OFF_FTM,
+                SUM(AVG_OFF_FTA) AS SUM_AVG_OFF_FTA,
+                SUM(AVG_OFF_FT_PCT) AS SUM_AVG_OFF_FT_PCT,
+                SUM(AVG_OFF_OREB) AS SUM_AVG_OFF_OREB,
+                SUM(AVG_OFF_DREB) AS SUM_AVG_OFF_DREB,
+                SUM(AVG_OFF_REB) AS SUM_AVG_OFF_REB,
+                SUM(AVG_OFF_AST) AS SUM_AVG_OFF_AST,
+                SUM(AVG_OFF_TOV) AS SUM_AVG_OFF_TOV,
+                SUM(AVG_OFF_STL) AS SUM_AVG_OFF_STL,
+                SUM(AVG_OFF_BLK) AS SUM_AVG_OFF_BLK,
+                SUM(AVG_OFF_BLKA) AS SUM_AVG_OFF_BLKA,
+                SUM(AVG_OFF_PF) AS SUM_AVG_OFF_PF,
+                SUM(AVG_OFF_PFD) AS SUM_AVG_OFF_PFD,
+                SUM(AVG_OFF_PTS) AS SUM_AVG_OFF_PTS,
+                SUM(AVG_OFF_PLUS_MINUS) AS SUM_AVG_OFF_PLUS_MINUS,
+                SUM(AVG_OFF_NBA_FANTASY_PTS) AS SUM_AVG_OFF_NBA_FANTASY_PTS,
+                SUM(AVG_OFF_DD2) AS SUM_AVG_OFF_DD2,
+                SUM(AVG_OFF_TD3) AS SUM_AVG_OFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_OFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE AVG_PLAYER_OFF_DIFF AS
+        SELECT AVG(AVG_OFF_MIN) AS AVG_AVG_OFF_MIN,
+                AVG(AVG_OFF_FGM) AS AVG_AVG_OFF_FGM,
+                AVG(AVG_OFF_FGA) AS AVG_AVG_OFF_FGA,
+                AVG(AVG_OFF_FG_PCT) AS AVG_AVG_OFF_FG_PCT,
+                AVG(AVG_OFF_FG3M) AS AVG_AVG_OFF_FG3M,
+                AVG(AVG_OFF_FG3A) AS AVG_AVG_OFF_FG3A,
+                AVG(AVG_OFF_FG3_PCT) AS AVG_AVG_OFF_FG3_PCT,
+                AVG(AVG_OFF_FTM) AS AVG_AVG_OFF_FTM,
+                AVG(AVG_OFF_FTA) AS AVG_AVG_OFF_FTA,
+                AVG(AVG_OFF_FT_PCT) AS AVG_AVG_OFF_FT_PCT,
+                AVG(AVG_OFF_OREB) AS AVG_AVG_OFF_OREB,
+                AVG(AVG_OFF_DREB) AS AVG_AVG_OFF_DREB,
+                AVG(AVG_OFF_REB) AS AVG_AVG_OFF_REB,
+                AVG(AVG_OFF_AST) AS AVG_AVG_OFF_AST,
+                AVG(AVG_OFF_TOV) AS AVG_AVG_OFF_TOV,
+                AVG(AVG_OFF_STL) AS AVG_AVG_OFF_STL,
+                AVG(AVG_OFF_BLK) AS AVG_AVG_OFF_BLK,
+                AVG(AVG_OFF_BLKA) AS AVG_AVG_OFF_BLKA,
+                AVG(AVG_OFF_PF) AS AVG_AVG_OFF_PF,
+                AVG(AVG_OFF_PFD) AS AVG_AVG_OFF_PFD,
+                AVG(AVG_OFF_PTS) AS AVG_AVG_OFF_PTS,
+                AVG(AVG_OFF_PLUS_MINUS) AS AVG_AVG_OFF_PLUS_MINUS,
+                AVG(AVG_OFF_NBA_FANTASY_PTS) AS AVG_AVG_OFF_NBA_FANTASY_PTS,
+                AVG(AVG_OFF_DD2) AS AVG_AVG_OFF_DD2,
+                AVG(AVG_OFF_TD3) AS AVG_AVG_OFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_OFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+
+
+CREATE TEMP TABLE AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF AS
+        SELECT AVG_ON_MIN - AVG_OFF_MIN AS AVG_ON_OFF_DIFF_MIN,
+                AVG_ON_FGM - AVG_OFF_FGM AS AVG_ON_OFF_DIFF_FGM,
+                AVG_ON_FGA - AVG_OFF_FGA AS AVG_ON_OFF_DIFF_FGA,
+                AVG_ON_FG_PCT - AVG_OFF_FG_PCT AS AVG_ON_OFF_DIFF_FG_PCT,
+                AVG_ON_FG3M - AVG_OFF_FG3M AS AVG_ON_OFF_DIFF_FG3M,
+                AVG_ON_FG3A - AVG_OFF_FG3A AS AVG_ON_OFF_DIFF_FG3A,
+                AVG_ON_FG3_PCT - AVG_OFF_FG3_PCT AS AVG_ON_OFF_DIFF_FG3_PCT,
+                AVG_ON_FTM - AVG_OFF_FTM AS AVG_ON_OFF_DIFF_FTM,
+                AVG_ON_FTA - AVG_OFF_FTA AS AVG_ON_OFF_DIFF_FTA,
+                AVG_ON_FT_PCT - AVG_OFF_FT_PCT AS AVG_ON_OFF_DIFF_FT_PCT,
+                AVG_ON_OREB - AVG_OFF_OREB AS AVG_ON_OFF_DIFF_OREB,
+                AVG_ON_DREB - AVG_OFF_DREB AS AVG_ON_OFF_DIFF_DREB,
+                AVG_ON_REB - AVG_OFF_REB AS AVG_ON_OFF_DIFF_REB,
+                AVG_ON_AST - AVG_OFF_AST AS AVG_ON_OFF_DIFF_AST,
+                AVG_ON_TOV - AVG_OFF_TOV AS AVG_ON_OFF_DIFF_TOV,
+                AVG_ON_STL - AVG_OFF_STL AS AVG_ON_OFF_DIFF_STL,
+                AVG_ON_BLK - AVG_OFF_BLK AS AVG_ON_OFF_DIFF_BLK,
+                AVG_ON_BLKA - AVG_OFF_BLKA AS AVG_ON_OFF_DIFF_BLKA,
+                AVG_ON_PF - AVG_OFF_PF AS AVG_ON_OFF_DIFF_PF,
+                AVG_ON_PFD - AVG_OFF_PFD AS AVG_ON_OFF_DIFF_PFD,
+                AVG_ON_PTS - AVG_OFF_PTS AS AVG_ON_OFF_DIFF_PTS,
+                AVG_ON_PLUS_MINUS - AVG_OFF_PLUS_MINUS AS AVG_ON_OFF_DIFF_PLUS_MINUS,
+                AVG_ON_NBA_FANTASY_PTS - AVG_OFF_NBA_FANTASY_PTS AS AVG_ON_OFF_DIFF_NBA_FANTASY_PTS,
+                AVG_ON_DD2 - AVG_OFF_DD2 AS AVG_ON_OFF_DIFF_DD2,
+                AVG_ON_TD3 - AVG_OFF_TD3 AS AVG_ON_OFF_DIFF_TD3,
+
+                AVG_PLAYER_WHEN_PLAYER_ON.PLAYER_ID,
+                AVG_PLAYER_WHEN_PLAYER_ON.GAME_DATE,
+                AVG_PLAYER_WHEN_PLAYER_ON.SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_ON
+                INNER JOIN AVG_PLAYER_WHEN_PLAYER_OFF
+                    ON AVG_PLAYER_WHEN_PLAYER_ON.PLAYER_ID = AVG_PLAYER_WHEN_PLAYER_OFF.PLAYER_ID
+                        AND AVG_PLAYER_WHEN_PLAYER_ON.GAME_DATE = AVG_PLAYER_WHEN_PLAYER_OFF.GAME_DATE
+                        AND AVG_PLAYER_WHEN_PLAYER_ON.SEASON = AVG_PLAYER_WHEN_PLAYER_OFF.SEASON
+                        AND AVG_PLAYER_WHEN_PLAYER_ON.INJURED_PLAYER_ID = AVG_PLAYER_WHEN_PLAYER_OFF.INJURED_PLAYER_ID;
+DROP TABLE AVG_PLAYER_WHEN_PLAYER_OFF;
+DROP TABLE AVG_PLAYER_WHEN_PLAYER_ON;
+
+CREATE TEMP TABLE AVG_PLAYER_ON_OFF_DIFF AS
+        SELECT AVG(AVG_ON_OFF_DIFF_MIN) AS AVG_AVG_ON_OFF_DIFF_MIN,
+                AVG(AVG_ON_OFF_DIFF_FGM) AS AVG_AVG_ON_OFF_DIFF_FGM,
+                AVG(AVG_ON_OFF_DIFF_FGA) AS AVG_AVG_ON_OFF_DIFF_FGA,
+                AVG(AVG_ON_OFF_DIFF_FG_PCT) AS AVG_AVG_ON_OFF_DIFF_FG_PCT,
+                AVG(AVG_ON_OFF_DIFF_FG3M) AS AVG_AVG_ON_OFF_DIFF_FG3M,
+                AVG(AVG_ON_OFF_DIFF_FG3A) AS AVG_AVG_ON_OFF_DIFF_FG3A,
+                AVG(AVG_ON_OFF_DIFF_FG3_PCT) AS AVG_AVG_ON_OFF_DIFF_FG3_PCT,
+                AVG(AVG_ON_OFF_DIFF_FTM) AS AVG_AVG_ON_OFF_DIFF_FTM,
+                AVG(AVG_ON_OFF_DIFF_FTA) AS AVG_AVG_ON_OFF_DIFF_FTA,
+                AVG(AVG_ON_OFF_DIFF_FT_PCT) AS AVG_AVG_ON_OFF_DIFF_FT_PCT,
+                AVG(AVG_ON_OFF_DIFF_OREB) AS AVG_AVG_ON_OFF_DIFF_OREB,
+                AVG(AVG_ON_OFF_DIFF_DREB) AS AVG_AVG_ON_OFF_DIFF_DREB,
+                AVG(AVG_ON_OFF_DIFF_REB) AS AVG_AVG_ON_OFF_DIFF_REB,
+                AVG(AVG_ON_OFF_DIFF_AST) AS AVG_AVG_ON_OFF_DIFF_AST,
+                AVG(AVG_ON_OFF_DIFF_TOV) AS AVG_AVG_ON_OFF_DIFF_TOV,
+                AVG(AVG_ON_OFF_DIFF_STL) AS AVG_AVG_ON_OFF_DIFF_STL,
+                AVG(AVG_ON_OFF_DIFF_BLK) AS AVG_AVG_ON_OFF_DIFF_BLK,
+                AVG(AVG_ON_OFF_DIFF_BLKA) AS AVG_AVG_ON_OFF_DIFF_BLKA,
+                AVG(AVG_ON_OFF_DIFF_PF) AS AVG_AVG_ON_OFF_DIFF_PF,
+                AVG(AVG_ON_OFF_DIFF_PFD) AS AVG_AVG_ON_OFF_DIFF_PFD,
+                AVG(AVG_ON_OFF_DIFF_PTS) AS AVG_AVG_ON_OFF_DIFF_PTS,
+                AVG(AVG_ON_OFF_DIFF_PLUS_MINUS) AS AVG_AVG_ON_OFF_DIFF_PLUS_MINUS,
+                AVG(AVG_ON_OFF_DIFF_NBA_FANTASY_PTS) AS AVG_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS,
+                AVG(AVG_ON_OFF_DIFF_DD2) AS AVG_AVG_ON_OFF_DIFF_DD2,
+                AVG(AVG_ON_OFF_DIFF_TD3) AS AVG_AVG_ON_OFF_DIFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE MAX_PLAYER_ON_OFF_DIFF AS
+        SELECT MAX(AVG_ON_OFF_DIFF_MIN) AS MAX_AVG_ON_OFF_DIFF_MIN,
+                MAX(AVG_ON_OFF_DIFF_FGM) AS MAX_AVG_ON_OFF_DIFF_FGM,
+                MAX(AVG_ON_OFF_DIFF_FGA) AS MAX_AVG_ON_OFF_DIFF_FGA,
+                MAX(AVG_ON_OFF_DIFF_FG_PCT) AS MAX_AVG_ON_OFF_DIFF_FG_PCT,
+                MAX(AVG_ON_OFF_DIFF_FG3M) AS MAX_AVG_ON_OFF_DIFF_FG3M,
+                MAX(AVG_ON_OFF_DIFF_FG3A) AS MAX_AVG_ON_OFF_DIFF_FG3A,
+                MAX(AVG_ON_OFF_DIFF_FG3_PCT) AS MAX_AVG_ON_OFF_DIFF_FG3_PCT,
+                MAX(AVG_ON_OFF_DIFF_FTM) AS MAX_AVG_ON_OFF_DIFF_FTM,
+                MAX(AVG_ON_OFF_DIFF_FTA) AS MAX_AVG_ON_OFF_DIFF_FTA,
+                MAX(AVG_ON_OFF_DIFF_FT_PCT) AS MAX_AVG_ON_OFF_DIFF_FT_PCT,
+                MAX(AVG_ON_OFF_DIFF_OREB) AS MAX_AVG_ON_OFF_DIFF_OREB,
+                MAX(AVG_ON_OFF_DIFF_DREB) AS MAX_AVG_ON_OFF_DIFF_DREB,
+                MAX(AVG_ON_OFF_DIFF_REB) AS MAX_AVG_ON_OFF_DIFF_REB,
+                MAX(AVG_ON_OFF_DIFF_AST) AS MAX_AVG_ON_OFF_DIFF_AST,
+                MAX(AVG_ON_OFF_DIFF_TOV) AS MAX_AVG_ON_OFF_DIFF_TOV,
+                MAX(AVG_ON_OFF_DIFF_STL) AS MAX_AVG_ON_OFF_DIFF_STL,
+                MAX(AVG_ON_OFF_DIFF_BLK) AS MAX_AVG_ON_OFF_DIFF_BLK,
+                MAX(AVG_ON_OFF_DIFF_BLKA) AS MAX_AVG_ON_OFF_DIFF_BLKA,
+                MAX(AVG_ON_OFF_DIFF_PF) AS MAX_AVG_ON_OFF_DIFF_PF,
+                MAX(AVG_ON_OFF_DIFF_PFD) AS MAX_AVG_ON_OFF_DIFF_PFD,
+                MAX(AVG_ON_OFF_DIFF_PTS) AS MAX_AVG_ON_OFF_DIFF_PTS,
+                MAX(AVG_ON_OFF_DIFF_PLUS_MINUS) AS MAX_AVG_ON_OFF_DIFF_PLUS_MINUS,
+                MAX(AVG_ON_OFF_DIFF_NBA_FANTASY_PTS) AS MAX_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS,
+                MAX(AVG_ON_OFF_DIFF_DD2) AS MAX_AVG_ON_OFF_DIFF_DD2,
+                MAX(AVG_ON_OFF_DIFF_TD3) AS MAX_AVG_ON_OFF_DIFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE MIN_PLAYER_ON_OFF_DIFF AS
+        SELECT MIN(AVG_ON_OFF_DIFF_MIN) AS MIN_AVG_ON_OFF_DIFF_MIN,
+                MIN(AVG_ON_OFF_DIFF_FGM) AS MIN_AVG_ON_OFF_DIFF_FGM,
+                MIN(AVG_ON_OFF_DIFF_FGA) AS MIN_AVG_ON_OFF_DIFF_FGA,
+                MIN(AVG_ON_OFF_DIFF_FG_PCT) AS MIN_AVG_ON_OFF_DIFF_FG_PCT,
+                MIN(AVG_ON_OFF_DIFF_FG3M) AS MIN_AVG_ON_OFF_DIFF_FG3M,
+                MIN(AVG_ON_OFF_DIFF_FG3A) AS MIN_AVG_ON_OFF_DIFF_FG3A,
+                MIN(AVG_ON_OFF_DIFF_FG3_PCT) AS MIN_AVG_ON_OFF_DIFF_FG3_PCT,
+                MIN(AVG_ON_OFF_DIFF_FTM) AS MIN_AVG_ON_OFF_DIFF_FTM,
+                MIN(AVG_ON_OFF_DIFF_FTA) AS MIN_AVG_ON_OFF_DIFF_FTA,
+                MIN(AVG_ON_OFF_DIFF_FT_PCT) AS MIN_AVG_ON_OFF_DIFF_FT_PCT,
+                MIN(AVG_ON_OFF_DIFF_OREB) AS MIN_AVG_ON_OFF_DIFF_OREB,
+                MIN(AVG_ON_OFF_DIFF_DREB) AS MIN_AVG_ON_OFF_DIFF_DREB,
+                MIN(AVG_ON_OFF_DIFF_REB) AS MIN_AVG_ON_OFF_DIFF_REB,
+                MIN(AVG_ON_OFF_DIFF_AST) AS MIN_AVG_ON_OFF_DIFF_AST,
+                MIN(AVG_ON_OFF_DIFF_TOV) AS MIN_AVG_ON_OFF_DIFF_TOV,
+                MIN(AVG_ON_OFF_DIFF_STL) AS MIN_AVG_ON_OFF_DIFF_STL,
+                MIN(AVG_ON_OFF_DIFF_BLK) AS MIN_AVG_ON_OFF_DIFF_BLK,
+                MIN(AVG_ON_OFF_DIFF_BLKA) AS MIN_AVG_ON_OFF_DIFF_BLKA,
+                MIN(AVG_ON_OFF_DIFF_PF) AS MIN_AVG_ON_OFF_DIFF_PF,
+                MIN(AVG_ON_OFF_DIFF_PFD) AS MIN_AVG_ON_OFF_DIFF_PFD,
+                MIN(AVG_ON_OFF_DIFF_PTS) AS MIN_AVG_ON_OFF_DIFF_PTS,
+                MIN(AVG_ON_OFF_DIFF_PLUS_MINUS) AS MIN_AVG_ON_OFF_DIFF_PLUS_MINUS,
+                MIN(AVG_ON_OFF_DIFF_NBA_FANTASY_PTS) AS MIN_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS,
+                MIN(AVG_ON_OFF_DIFF_DD2) AS MIN_AVG_ON_OFF_DIFF_DD2,
+                MIN(AVG_ON_OFF_DIFF_TD3) AS MIN_AVG_ON_OFF_DIFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+CREATE TEMP TABLE SUM_PLAYER_ON_OFF_DIFF AS
+        SELECT SUM(AVG_ON_OFF_DIFF_MIN) AS SUM_AVG_ON_OFF_DIFF_MIN,
+                SUM(AVG_ON_OFF_DIFF_FGM) AS SUM_AVG_ON_OFF_DIFF_FGM,
+                SUM(AVG_ON_OFF_DIFF_FGA) AS SUM_AVG_ON_OFF_DIFF_FGA,
+                SUM(AVG_ON_OFF_DIFF_FG_PCT) AS SUM_AVG_ON_OFF_DIFF_FG_PCT,
+                SUM(AVG_ON_OFF_DIFF_FG3M) AS SUM_AVG_ON_OFF_DIFF_FG3M,
+                SUM(AVG_ON_OFF_DIFF_FG3A) AS SUM_AVG_ON_OFF_DIFF_FG3A,
+                SUM(AVG_ON_OFF_DIFF_FG3_PCT) AS SUM_AVG_ON_OFF_DIFF_FG3_PCT,
+                SUM(AVG_ON_OFF_DIFF_FTM) AS SUM_AVG_ON_OFF_DIFF_FTM,
+                SUM(AVG_ON_OFF_DIFF_FTA) AS SUM_AVG_ON_OFF_DIFF_FTA,
+                SUM(AVG_ON_OFF_DIFF_FT_PCT) AS SUM_AVG_ON_OFF_DIFF_FT_PCT,
+                SUM(AVG_ON_OFF_DIFF_OREB) AS SUM_AVG_ON_OFF_DIFF_OREB,
+                SUM(AVG_ON_OFF_DIFF_DREB) AS SUM_AVG_ON_OFF_DIFF_DREB,
+                SUM(AVG_ON_OFF_DIFF_REB) AS SUM_AVG_ON_OFF_DIFF_REB,
+                SUM(AVG_ON_OFF_DIFF_AST) AS SUM_AVG_ON_OFF_DIFF_AST,
+                SUM(AVG_ON_OFF_DIFF_TOV) AS SUM_AVG_ON_OFF_DIFF_TOV,
+                SUM(AVG_ON_OFF_DIFF_STL) AS SUM_AVG_ON_OFF_DIFF_STL,
+                SUM(AVG_ON_OFF_DIFF_BLK) AS SUM_AVG_ON_OFF_DIFF_BLK,
+                SUM(AVG_ON_OFF_DIFF_BLKA) AS SUM_AVG_ON_OFF_DIFF_BLKA,
+                SUM(AVG_ON_OFF_DIFF_PF) AS SUM_AVG_ON_OFF_DIFF_PF,
+                SUM(AVG_ON_OFF_DIFF_PFD) AS SUM_AVG_ON_OFF_DIFF_PFD,
+                SUM(AVG_ON_OFF_DIFF_PTS) AS SUM_AVG_ON_OFF_DIFF_PTS,
+                SUM(AVG_ON_OFF_DIFF_PLUS_MINUS) AS SUM_AVG_ON_OFF_DIFF_PLUS_MINUS,
+                SUM(AVG_ON_OFF_DIFF_NBA_FANTASY_PTS) AS SUM_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS,
+                SUM(AVG_ON_OFF_DIFF_DD2) AS SUM_AVG_ON_OFF_DIFF_DD2,
+                SUM(AVG_ON_OFF_DIFF_TD3) AS SUM_AVG_ON_OFF_DIFF_TD3,
+
+                PLAYER_ID, GAME_DATE, SEASON
+            FROM AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF
+                GROUP BY PLAYER_ID, GAME_DATE, SEASON;
+
+DROP TABLE AVG_PLAYER_WHEN_PLAYER_ON_OFF_DIFF;

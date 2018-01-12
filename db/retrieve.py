@@ -122,6 +122,25 @@ def aggregate_training_data(con, filter_fp=-10, filter_season=START_YEAR):
                 
                 p_log_today.PLAYER_ID AS PLAYER_ID, p_log_today.PLAYER_NAME AS PLAYER_NAME, p_log_today.TEAM_ID AS TEAM_ID, p_log_today.TEAM_ABBREVIATION AS TEAM_ABBREVIATION, p_log_today.TEAM_NAME AS TEAM_NAME, p_log_today.GAME_ID AS GAME_ID, p_log_today.GAME_DATE AS GAME_DATE, p_log_today.MATCHUP AS MATCHUP, p_log_today.WL AS WL, p_log_today.MIN AS MIN, p_log_today.FGM AS FGM, p_log_today.FGA AS FGA, p_log_today.FG_PCT AS FG_PCT, p_log_today.FG3M AS FG3M, p_log_today.FG3A AS FG3A, p_log_today.FG3_PCT AS FG3_PCT, p_log_today.FTM AS FTM, p_log_today.FTA AS FTA, p_log_today.FT_PCT AS FT_PCT, p_log_today.OREB AS OREB, p_log_today.DREB AS DREB, p_log_today.REB AS REB, p_log_today.AST AS AST, p_log_today.TOV AS TOV, p_log_today.STL AS STL, p_log_today.BLK AS BLK, p_log_today.BLKA AS BLKA, p_log_today.PF AS PF, p_log_today.PFD AS PFD, p_log_today.PTS AS PTS, p_log_today.PLUS_MINUS AS PLUS_MINUS, p_log_today.NBA_FANTASY_PTS AS NBA_FANTASY_PTS, p_log_today.DD2 AS DD2, p_log_today.TD3 AS TD3, p_log_today.SEASON AS SEASON,
                 
+                usg_p_log_today.USG_PCT AS USG_PCT,
+                usg_p_log_today.PCT_FGM AS PCT_FGM,
+                usg_p_log_today.PCT_FGA AS PCT_FGA,
+                usg_p_log_today.PCT_FG3M AS PCT_FG3M,
+                usg_p_log_today.PCT_FG3A AS PCT_FG3A,
+                usg_p_log_today.PCT_FTM AS PCT_FTM,
+                usg_p_log_today.PCT_FTA AS PCT_FTA,
+                usg_p_log_today.PCT_OREB AS PCT_OREB,
+                usg_p_log_today.PCT_DREB AS PCT_DREB,
+                usg_p_log_today.PCT_REB AS PCT_REB,
+                usg_p_log_today.PCT_AST AS PCT_AST,
+                usg_p_log_today.PCT_TOV AS PCT_TOV,
+                usg_p_log_today.PCT_STL AS PCT_STL,
+                usg_p_log_today.PCT_BLK AS PCT_BLK,
+                usg_p_log_today.PCT_BLKA AS PCT_BLKA,
+                usg_p_log_today.PCT_PF AS PCT_PF,
+                usg_p_log_today.PCT_PFD AS PCT_PFD,
+                usg_p_log_today.PCT_PTS AS PCT_PTS,
+                
                 p_avg_stats.W_PCT AS AVG_W_PCT, p_avg_stats.MIN AS AVG_MIN, p_avg_stats.FGM AS AVG_FGM, p_avg_stats.FGA AS AVG_FGA, p_avg_stats.FG_PCT AS AVG_FG_PCT, p_avg_stats.FG3M AS AVG_FG3M, p_avg_stats.FG3A AS AVG_FG3A, p_avg_stats.FG3_PCT AS AVG_FG3_PCT, p_avg_stats.FTM AS AVG_FTM, p_avg_stats.FTA AS AVG_FTA, p_avg_stats.FT_PCT AS AVG_FT_PCT, p_avg_stats.OREB AS AVG_OREB, p_avg_stats.DREB AS AVG_DREB, p_avg_stats.REB AS AVG_REB, p_avg_stats.AST AS AVG_AST, p_avg_stats.TOV AS AVG_TOV, p_avg_stats.STL AS AVG_STL, p_avg_stats.BLK AS AVG_BLK, p_avg_stats.BLKA AS AVG_BLKA, p_avg_stats.PF AS AVG_PF, p_avg_stats.PFD AS AVG_PFD, p_avg_stats.PTS AS AVG_PTS, p_avg_stats.PLUS_MINUS AS AVG_PLUS_MINUS, p_avg_stats.NBA_FANTASY_PTS AS AVG_NBA_FANTASY_PTS,
                 p_avg_stats.DD2 * 1.0 /p_avg_stats.GP AS AVG_DD2, p_avg_stats.TD3 * 1.0 /p_avg_stats.GP AS AVG_TD3,
 
@@ -156,109 +175,163 @@ def aggregate_training_data(con, filter_fp=-10, filter_season=START_YEAR):
                 
                 dnp_stats_by_position.DNP_MIN AS POSITION_DNP_MIN, dnp_stats_by_position.DNP_FGM AS POSITION_DNP_FGM, dnp_stats_by_position.DNP_FGA AS POSITION_DNP_FGA, dnp_stats_by_position.DNP_FG3M AS POSITION_DNP_FG3M, dnp_stats_by_position.DNP_FG3A AS POSITION_DNP_FG3A, dnp_stats_by_position.DNP_FTM AS POSITION_DNP_FTM, dnp_stats_by_position.DNP_FTA AS POSITION_DNP_FTA, dnp_stats_by_position.DNP_OREB AS POSITION_DNP_OREB, dnp_stats_by_position.DNP_DREB AS POSITION_DNP_DREB, dnp_stats_by_position.DNP_REB AS POSITION_DNP_REB, dnp_stats_by_position.DNP_AST AS POSITION_DNP_AST, dnp_stats_by_position.DNP_TOV AS POSITION_DNP_TOV, dnp_stats_by_position.DNP_STL AS POSITION_DNP_STL, dnp_stats_by_position.DNP_BLK AS POSITION_DNP_BLK, dnp_stats_by_position.DNP_BLKA AS POSITION_DNP_BLKA, dnp_stats_by_position.DNP_PF AS POSITION_DNP_PF, dnp_stats_by_position.DNP_PFD AS POSITION_DNP_PFD, dnp_stats_by_position.DNP_PTS AS POSITION_DNP_PTS, dnp_stats_by_position.DNP_PLUS_MINUS AS POSITION_DNP_PLUS_MINUS, dnp_stats_by_position.DNP_NBA_FANTASY_PTS AS POSITION_DNP_NBA_FANTASY_PTS, dnp_stats_by_position.DNP_DD2 AS POSITION_DNP_DD2, dnp_stats_by_position.DNP_TD3 AS POSITION_DNP_TD3,
                 
-                COALESCE(AVG_INJURED_MIN, p_avg_stats.MIN) AS AVG_INJURED_MIN,
-                COALESCE(AVG_INJURED_FGM, p_avg_stats.FGM) AS AVG_INJURED_FGM,
-                COALESCE(AVG_INJURED_FGA, p_avg_stats.FGA) AS AVG_INJURED_FGA,
-                COALESCE(AVG_INJURED_FG_PCT, p_avg_stats.FG_PCT) AS AVG_INJURED_FG_PCT,
-                COALESCE(AVG_INJURED_FG3M, p_avg_stats.FG3M) AS AVG_INJURED_FG3M,
-                COALESCE(AVG_INJURED_FG3A, p_avg_stats.FG3A) AS AVG_INJURED_FG3A,
-                COALESCE(AVG_INJURED_FG3_PCT, p_avg_stats.FG3_PCT) AS AVG_INJURED_FG3_PCT,
-                COALESCE(AVG_INJURED_FTM, p_avg_stats.FTM) AS AVG_INJURED_FTM,
-                COALESCE(AVG_INJURED_FTA, p_avg_stats.FTA) AS AVG_INJURED_FTA,
-                COALESCE(AVG_INJURED_FT_PCT, p_avg_stats.FT_PCT) AS AVG_INJURED_FT_PCT,
-                COALESCE(AVG_INJURED_OREB, p_avg_stats.OREB) AS AVG_INJURED_OREB,
-                COALESCE(AVG_INJURED_DREB, p_avg_stats.DREB) AS AVG_INJURED_DREB,
-                COALESCE(AVG_INJURED_REB, p_avg_stats.REB) AS AVG_INJURED_REB,
-                COALESCE(AVG_INJURED_AST, p_avg_stats.AST) AS AVG_INJURED_AST,
-                COALESCE(AVG_INJURED_TOV, p_avg_stats.TOV) AS AVG_INJURED_TOV,
-                COALESCE(AVG_INJURED_STL, p_avg_stats.STL) AS AVG_INJURED_STL,
-                COALESCE(AVG_INJURED_BLK, p_avg_stats.BLK) AS AVG_INJURED_BLK,
-                COALESCE(AVG_INJURED_BLKA, p_avg_stats.BLKA) AS AVG_INJURED_BLKA,
-                COALESCE(AVG_INJURED_PF, p_avg_stats.PF) AS AVG_INJURED_PF,
-                COALESCE(AVG_INJURED_PFD, p_avg_stats.PFD) AS AVG_INJURED_PFD,
-                COALESCE(AVG_INJURED_PTS, p_avg_stats.PTS) AS AVG_INJURED_PTS,
-                COALESCE(AVG_INJURED_PLUS_MINUS, p_avg_stats.PLUS_MINUS) AS AVG_INJURED_PLUS_MINUS,
-                COALESCE(AVG_INJURED_NBA_FANTASY_PTS, p_avg_stats.NBA_FANTASY_PTS) AS AVG_INJURED_NBA_FANTASY_PTS,
-                COALESCE(AVG_INJURED_DD2, p_avg_stats.DD2) AS AVG_INJURED_DD2,
-                COALESCE(AVG_INJURED_TD3, p_avg_stats.TD3) AS AVG_INJURED_TD3,
+                COALESCE(SUM_AVG_ON_OFF_DIFF_MIN, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FGM, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FGA, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FG_PCT, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FG3M, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FG3A, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FG3_PCT, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FTM, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FTA, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_FT_PCT, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_OREB, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_DREB, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_REB, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_AST, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_TOV, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_STL, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_BLK, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_BLKA, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_PF, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_PFD, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_PTS, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_PLUS_MINUS, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_DD2, 0),
+                COALESCE(SUM_AVG_ON_OFF_DIFF_TD3, 0),
 
-                COALESCE(MAX_INJURED_MIN, p_avg_stats.MIN) AS MAX_INJURED_MIN,
-                COALESCE(MAX_INJURED_FGM, p_avg_stats.FGM) AS MAX_INJURED_FGM,
-                COALESCE(MAX_INJURED_FGA, p_avg_stats.FGA) AS MAX_INJURED_FGA,
-                COALESCE(MAX_INJURED_FG_PCT, p_avg_stats.FG_PCT) AS MAX_INJURED_FG_PCT,
-                COALESCE(MAX_INJURED_FG3M, p_avg_stats.FG3M) AS MAX_INJURED_FG3M,
-                COALESCE(MAX_INJURED_FG3A, p_avg_stats.FG3A) AS MAX_INJURED_FG3A,
-                COALESCE(MAX_INJURED_FG3_PCT, p_avg_stats.FG3_PCT) AS MAX_INJURED_FG3_PCT,
-                COALESCE(MAX_INJURED_FTM, p_avg_stats.FTM) AS MAX_INJURED_FTM,
-                COALESCE(MAX_INJURED_FTA, p_avg_stats.FTA) AS MAX_INJURED_FTA,
-                COALESCE(MAX_INJURED_FT_PCT, p_avg_stats.FT_PCT) AS MAX_INJURED_FT_PCT,
-                COALESCE(MAX_INJURED_OREB, p_avg_stats.OREB) AS MAX_INJURED_OREB,
-                COALESCE(MAX_INJURED_DREB, p_avg_stats.DREB) AS MAX_INJURED_DREB,
-                COALESCE(MAX_INJURED_REB, p_avg_stats.REB) AS MAX_INJURED_REB,
-                COALESCE(MAX_INJURED_AST, p_avg_stats.AST) AS MAX_INJURED_AST,
-                COALESCE(MAX_INJURED_TOV, p_avg_stats.TOV) AS MAX_INJURED_TOV,
-                COALESCE(MAX_INJURED_STL, p_avg_stats.STL) AS MAX_INJURED_STL,
-                COALESCE(MAX_INJURED_BLK, p_avg_stats.BLK) AS MAX_INJURED_BLK,
-                COALESCE(MAX_INJURED_BLKA, p_avg_stats.BLKA) AS MAX_INJURED_BLKA,
-                COALESCE(MAX_INJURED_PF, p_avg_stats.PF) AS MAX_INJURED_PF,
-                COALESCE(MAX_INJURED_PFD, p_avg_stats.PFD) AS MAX_INJURED_PFD,
-                COALESCE(MAX_INJURED_PTS, p_avg_stats.PTS) AS MAX_INJURED_PTS,
-                COALESCE(MAX_INJURED_PLUS_MINUS, p_avg_stats.PLUS_MINUS) AS MAX_INJURED_PLUS_MINUS,
-                COALESCE(MAX_INJURED_NBA_FANTASY_PTS, p_avg_stats.NBA_FANTASY_PTS) AS MAX_INJURED_NBA_FANTASY_PTS,
-                COALESCE(MAX_INJURED_DD2, p_avg_stats.DD2) AS MAX_INJURED_DD2,
-                COALESCE(MAX_INJURED_TD3, p_avg_stats.TD3) AS MAX_INJURED_TD3,
                 
-                COALESCE(AVG_INJURED_MIN - p_avg_stats.MIN, 0) AS AVG_DIFF_INJURED_MIN,
-                COALESCE(AVG_INJURED_FGM - p_avg_stats.FGM, 0) AS AVG_DIFF_INJURED_FGM,
-                COALESCE(AVG_INJURED_FGA - p_avg_stats.FGA, 0) AS AVG_DIFF_INJURED_FGA,
-                COALESCE(AVG_INJURED_FG_PCT - p_avg_stats.FG_PCT, 0) AS AVG_DIFF_INJURED_FG_PCT,
-                COALESCE(AVG_INJURED_FG3M - p_avg_stats.FG3M, 0) AS AVG_DIFF_INJURED_FG3M,
-                COALESCE(AVG_INJURED_FG3A - p_avg_stats.FG3A, 0) AS AVG_DIFF_INJURED_FG3A,
-                COALESCE(AVG_INJURED_FG3_PCT - p_avg_stats.FG3_PCT, 0) AS AVG_DIFF_INJURED_FG3_PCT,
-                COALESCE(AVG_INJURED_FTM - p_avg_stats.FTM, 0) AS AVG_DIFF_INJURED_FTM,
-                COALESCE(AVG_INJURED_FTA - p_avg_stats.FTA, 0) AS AVG_DIFF_INJURED_FTA,
-                COALESCE(AVG_INJURED_FT_PCT - p_avg_stats.FT_PCT, 0) AS AVG_DIFF_INJURED_FT_PCT,
-                COALESCE(AVG_INJURED_OREB - p_avg_stats.OREB, 0) AS AVG_DIFF_INJURED_OREB,
-                COALESCE(AVG_INJURED_DREB - p_avg_stats.DREB, 0) AS AVG_DIFF_INJURED_DREB,
-                COALESCE(AVG_INJURED_REB - p_avg_stats.REB, 0) AS AVG_DIFF_INJURED_REB,
-                COALESCE(AVG_INJURED_AST - p_avg_stats.AST, 0) AS AVG_DIFF_INJURED_AST,
-                COALESCE(AVG_INJURED_TOV - p_avg_stats.TOV, 0) AS AVG_DIFF_INJURED_TOV,
-                COALESCE(AVG_INJURED_STL - p_avg_stats.STL, 0) AS AVG_DIFF_INJURED_STL,
-                COALESCE(AVG_INJURED_BLK - p_avg_stats.BLK, 0) AS AVG_DIFF_INJURED_BLK,
-                COALESCE(AVG_INJURED_BLKA - p_avg_stats.BLKA, 0) AS AVG_DIFF_INJURED_BLKA,
-                COALESCE(AVG_INJURED_PF - p_avg_stats.PF, 0) AS AVG_DIFF_INJURED_PF,
-                COALESCE(AVG_INJURED_PFD - p_avg_stats.PFD, 0) AS AVG_DIFF_INJURED_PFD,
-                COALESCE(AVG_INJURED_PTS - p_avg_stats.PTS, 0) AS AVG_DIFF_INJURED_PTS,
-                COALESCE(AVG_INJURED_PLUS_MINUS - p_avg_stats.PLUS_MINUS, 0) AS AVG_DIFF_INJURED_PLUS_MINUS,
-                COALESCE(AVG_INJURED_NBA_FANTASY_PTS - p_avg_stats.NBA_FANTASY_PTS, 0) AS AVG_DIFF_INJURED_NBA_FANTASY_PTS,
-                COALESCE(AVG_INJURED_DD2 - p_avg_stats.DD2, 0) AS AVG_DIFF_INJURED_DD2,
-                COALESCE(AVG_INJURED_TD3 - p_avg_stats.TD3, 0) AS AVG_DIFF_INJURED_TD3,
+                COALESCE(MAX_AVG_ON_OFF_DIFF_MIN, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FGM, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FGA, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FG_PCT, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FG3M, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FG3A, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FG3_PCT, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FTM, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FTA, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_FT_PCT, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_OREB, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_DREB, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_REB, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_AST, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_TOV, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_STL, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_BLK, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_BLKA, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_PF, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_PFD, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_PTS, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_PLUS_MINUS, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_DD2, 0),
+                COALESCE(MAX_AVG_ON_OFF_DIFF_TD3, 0),
                 
-                COALESCE(MAX_INJURED_MIN - p_avg_stats.MIN, 0) AS MAX_DIFF_INJURED_MIN,
-                COALESCE(MAX_INJURED_FGM - p_avg_stats.FGM, 0) AS MAX_DIFF_INJURED_FGM,
-                COALESCE(MAX_INJURED_FGA - p_avg_stats.FGA, 0) AS MAX_DIFF_INJURED_FGA,
-                COALESCE(MAX_INJURED_FG_PCT - p_avg_stats.FG_PCT, 0) AS MAX_DIFF_INJURED_FG_PCT,
-                COALESCE(MAX_INJURED_FG3M - p_avg_stats.FG3M, 0) AS MAX_DIFF_INJURED_FG3M,
-                COALESCE(MAX_INJURED_FG3A - p_avg_stats.FG3A, 0) AS MAX_DIFF_INJURED_FG3A,
-                COALESCE(MAX_INJURED_FG3_PCT - p_avg_stats.FG3_PCT, 0) AS MAX_DIFF_INJURED_FG3_PCT,
-                COALESCE(MAX_INJURED_FTM - p_avg_stats.FTM, 0) AS MAX_DIFF_INJURED_FTM,
-                COALESCE(MAX_INJURED_FTA - p_avg_stats.FTA, 0) AS MAX_DIFF_INJURED_FTA,
-                COALESCE(MAX_INJURED_FT_PCT - p_avg_stats.FT_PCT, 0) AS MAX_DIFF_INJURED_FT_PCT,
-                COALESCE(MAX_INJURED_OREB - p_avg_stats.OREB, 0) AS MAX_DIFF_INJURED_OREB,
-                COALESCE(MAX_INJURED_DREB - p_avg_stats.DREB, 0) AS MAX_DIFF_INJURED_DREB,
-                COALESCE(MAX_INJURED_REB - p_avg_stats.REB, 0) AS MAX_DIFF_INJURED_REB,
-                COALESCE(MAX_INJURED_AST - p_avg_stats.AST, 0) AS MAX_DIFF_INJURED_AST,
-                COALESCE(MAX_INJURED_TOV - p_avg_stats.TOV, 0) AS MAX_DIFF_INJURED_TOV,
-                COALESCE(MAX_INJURED_STL - p_avg_stats.STL, 0) AS MAX_DIFF_INJURED_STL,
-                COALESCE(MAX_INJURED_BLK - p_avg_stats.BLK, 0) AS MAX_DIFF_INJURED_BLK,
-                COALESCE(MAX_INJURED_BLKA - p_avg_stats.BLKA, 0) AS MAX_DIFF_INJURED_BLKA,
-                COALESCE(MAX_INJURED_PF - p_avg_stats.PF, 0) AS MAX_DIFF_INJURED_PF,
-                COALESCE(MAX_INJURED_PFD - p_avg_stats.PFD, 0) AS MAX_DIFF_INJURED_PFD,
-                COALESCE(MAX_INJURED_PTS - p_avg_stats.PTS, 0) AS MAX_DIFF_INJURED_PTS,
-                COALESCE(MAX_INJURED_PLUS_MINUS - p_avg_stats.PLUS_MINUS, 0) AS MAX_DIFF_INJURED_PLUS_MINUS,
-                COALESCE(MAX_INJURED_NBA_FANTASY_PTS - p_avg_stats.NBA_FANTASY_PTS, 0) AS MAX_DIFF_INJURED_NBA_FANTASY_PTS,
-                COALESCE(MAX_INJURED_DD2 - p_avg_stats.DD2, 0) AS MAX_DIFF_INJURED_DD2,
-                COALESCE(MAX_INJURED_TD3 - p_avg_stats.TD3, 0) AS MAX_DIFF_INJURED_TD3
+                COALESCE(MIN_AVG_ON_OFF_DIFF_MIN, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FGM, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FGA, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FG_PCT, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FG3M, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FG3A, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FG3_PCT, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FTM, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FTA, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_FT_PCT, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_OREB, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_DREB, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_REB, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_AST, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_TOV, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_STL, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_BLK, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_BLKA, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_PF, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_PFD, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_PTS, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_PLUS_MINUS, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_NBA_FANTASY_PTS, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_DD2, 0),
+                COALESCE(MIN_AVG_ON_OFF_DIFF_TD3, 0),
+                
+                COALESCE(MAX_AVG_OFF_MIN, p_avg_stats.MIN) AS MAX_AVG_OFF_MIN,
+                COALESCE(MAX_AVG_OFF_FGM, p_avg_stats.FGM) AS MAX_AVG_OFF_FGM,
+                COALESCE(MAX_AVG_OFF_FGA, p_avg_stats.FGA) AS MAX_AVG_OFF_FGA,
+                COALESCE(MAX_AVG_OFF_FG_PCT, p_avg_stats.FG_PCT) AS MAX_AVG_OFF_FG_PCT,
+                COALESCE(MAX_AVG_OFF_FG3M, p_avg_stats.FG3M) AS MAX_AVG_OFF_FG3M,
+                COALESCE(MAX_AVG_OFF_FG3A, p_avg_stats.FG3A) AS MAX_AVG_OFF_FG3A,
+                COALESCE(MAX_AVG_OFF_FG3_PCT, p_avg_stats.FG3_PCT) AS MAX_AVG_OFF_FG3_PCT,
+                COALESCE(MAX_AVG_OFF_FTM, p_avg_stats.FTM) AS MAX_AVG_OFF_FTM,
+                COALESCE(MAX_AVG_OFF_FTA, p_avg_stats.FTA) AS MAX_AVG_OFF_FTA,
+                COALESCE(MAX_AVG_OFF_FT_PCT, p_avg_stats.FT_PCT) AS MAX_AVG_OFF_FT_PCT,
+                COALESCE(MAX_AVG_OFF_OREB, p_avg_stats.OREB) AS MAX_AVG_OFF_OREB,
+                COALESCE(MAX_AVG_OFF_DREB, p_avg_stats.DREB) AS MAX_AVG_OFF_DREB,
+                COALESCE(MAX_AVG_OFF_REB, p_avg_stats.REB) AS MAX_AVG_OFF_REB,
+                COALESCE(MAX_AVG_OFF_AST, p_avg_stats.AST) AS MAX_AVG_OFF_AST,
+                COALESCE(MAX_AVG_OFF_TOV, p_avg_stats.TOV) AS MAX_AVG_OFF_TOV,
+                COALESCE(MAX_AVG_OFF_STL, p_avg_stats.STL) AS MAX_AVG_OFF_STL,
+                COALESCE(MAX_AVG_OFF_BLK, p_avg_stats.BLK) AS MAX_AVG_OFF_BLK,
+                COALESCE(MAX_AVG_OFF_BLKA, p_avg_stats.BLKA) AS MAX_AVG_OFF_BLKA,
+                COALESCE(MAX_AVG_OFF_PF, p_avg_stats.PF) AS MAX_AVG_OFF_PF,
+                COALESCE(MAX_AVG_OFF_PFD, p_avg_stats.PFD) AS MAX_AVG_OFF_PFD,
+                COALESCE(MAX_AVG_OFF_PTS, p_avg_stats.PTS) AS MAX_AVG_OFF_PTS,
+                COALESCE(MAX_AVG_OFF_PLUS_MINUS, p_avg_stats.PLUS_MINUS) AS MAX_AVG_OFF_PLUS_MINUS,
+                COALESCE(MAX_AVG_OFF_NBA_FANTASY_PTS, p_avg_stats.NBA_FANTASY_PTS) AS MAX_AVG_OFF_NBA_FANTASY_PTS,
+                COALESCE(MAX_AVG_OFF_DD2, p_avg_stats.DD2) AS MAX_AVG_OFF_DD2,
+                COALESCE(MAX_AVG_OFF_TD3, p_avg_stats.TD3) AS MAX_AVG_OFF_TD3,
+                
+                COALESCE(SUM_AVG_OFF_MIN, p_avg_stats.MIN) AS SUM_AVG_OFF_MIN,
+                COALESCE(SUM_AVG_OFF_FGM, p_avg_stats.FGM) AS SUM_AVG_OFF_FGM,
+                COALESCE(SUM_AVG_OFF_FGA, p_avg_stats.FGA) AS SUM_AVG_OFF_FGA,
+                COALESCE(SUM_AVG_OFF_FG_PCT, p_avg_stats.FG_PCT) AS SUM_AVG_OFF_FG_PCT,
+                COALESCE(SUM_AVG_OFF_FG3M, p_avg_stats.FG3M) AS SUM_AVG_OFF_FG3M,
+                COALESCE(SUM_AVG_OFF_FG3A, p_avg_stats.FG3A) AS SUM_AVG_OFF_FG3A,
+                COALESCE(SUM_AVG_OFF_FG3_PCT, p_avg_stats.FG3_PCT) AS SUM_AVG_OFF_FG3_PCT,
+                COALESCE(SUM_AVG_OFF_FTM, p_avg_stats.FTM) AS SUM_AVG_OFF_FTM,
+                COALESCE(SUM_AVG_OFF_FTA, p_avg_stats.FTA) AS SUM_AVG_OFF_FTA,
+                COALESCE(SUM_AVG_OFF_FT_PCT, p_avg_stats.FT_PCT) AS SUM_AVG_OFF_FT_PCT,
+                COALESCE(SUM_AVG_OFF_OREB, p_avg_stats.OREB) AS SUM_AVG_OFF_OREB,
+                COALESCE(SUM_AVG_OFF_DREB, p_avg_stats.DREB) AS SUM_AVG_OFF_DREB,
+                COALESCE(SUM_AVG_OFF_REB, p_avg_stats.REB) AS SUM_AVG_OFF_REB,
+                COALESCE(SUM_AVG_OFF_AST, p_avg_stats.AST) AS SUM_AVG_OFF_AST,
+                COALESCE(SUM_AVG_OFF_TOV, p_avg_stats.TOV) AS SUM_AVG_OFF_TOV,
+                COALESCE(SUM_AVG_OFF_STL, p_avg_stats.STL) AS SUM_AVG_OFF_STL,
+                COALESCE(SUM_AVG_OFF_BLK, p_avg_stats.BLK) AS SUM_AVG_OFF_BLK,
+                COALESCE(SUM_AVG_OFF_BLKA, p_avg_stats.BLKA) AS SUM_AVG_OFF_BLKA,
+                COALESCE(SUM_AVG_OFF_PF, p_avg_stats.PF) AS SUM_AVG_OFF_PF,
+                COALESCE(SUM_AVG_OFF_PFD, p_avg_stats.PFD) AS SUM_AVG_OFF_PFD,
+                COALESCE(SUM_AVG_OFF_PTS, p_avg_stats.PTS) AS SUM_AVG_OFF_PTS,
+                COALESCE(SUM_AVG_OFF_PLUS_MINUS, p_avg_stats.PLUS_MINUS) AS SUM_AVG_OFF_PLUS_MINUS,
+                COALESCE(SUM_AVG_OFF_NBA_FANTASY_PTS, p_avg_stats.NBA_FANTASY_PTS) AS SUM_AVG_OFF_NBA_FANTASY_PTS,
+                COALESCE(SUM_AVG_OFF_DD2, p_avg_stats.DD2) AS SUM_AVG_OFF_DD2,
+                COALESCE(SUM_AVG_OFF_TD3, p_avg_stats.TD3) AS SUM_AVG_OFF_TD3,
+                
+                COALESCE(AVG_AVG_OFF_MIN, p_avg_stats.MIN) AS AVG_AVG_OFF_MIN,
+                COALESCE(AVG_AVG_OFF_FGM, p_avg_stats.FGM) AS AVG_AVG_OFF_FGM,
+                COALESCE(AVG_AVG_OFF_FGA, p_avg_stats.FGA) AS AVG_AVG_OFF_FGA,
+                COALESCE(AVG_AVG_OFF_FG_PCT, p_avg_stats.FG_PCT) AS AVG_AVG_OFF_FG_PCT,
+                COALESCE(AVG_AVG_OFF_FG3M, p_avg_stats.FG3M) AS AVG_AVG_OFF_FG3M,
+                COALESCE(AVG_AVG_OFF_FG3A, p_avg_stats.FG3A) AS AVG_AVG_OFF_FG3A,
+                COALESCE(AVG_AVG_OFF_FG3_PCT, p_avg_stats.FG3_PCT) AS AVG_AVG_OFF_FG3_PCT,
+                COALESCE(AVG_AVG_OFF_FTM, p_avg_stats.FTM) AS AVG_AVG_OFF_FTM,
+                COALESCE(AVG_AVG_OFF_FTA, p_avg_stats.FTA) AS AVG_AVG_OFF_FTA,
+                COALESCE(AVG_AVG_OFF_FT_PCT, p_avg_stats.FT_PCT) AS AVG_AVG_OFF_FT_PCT,
+                COALESCE(AVG_AVG_OFF_OREB, p_avg_stats.OREB) AS AVG_AVG_OFF_OREB,
+                COALESCE(AVG_AVG_OFF_DREB, p_avg_stats.DREB) AS AVG_AVG_OFF_DREB,
+                COALESCE(AVG_AVG_OFF_REB, p_avg_stats.REB) AS AVG_AVG_OFF_REB,
+                COALESCE(AVG_AVG_OFF_AST, p_avg_stats.AST) AS AVG_AVG_OFF_AST,
+                COALESCE(AVG_AVG_OFF_TOV, p_avg_stats.TOV) AS AVG_AVG_OFF_TOV,
+                COALESCE(AVG_AVG_OFF_STL, p_avg_stats.STL) AS AVG_AVG_OFF_STL,
+                COALESCE(AVG_AVG_OFF_BLK, p_avg_stats.BLK) AS AVG_AVG_OFF_BLK,
+                COALESCE(AVG_AVG_OFF_BLKA, p_avg_stats.BLKA) AS AVG_AVG_OFF_BLKA,
+                COALESCE(AVG_AVG_OFF_PF, p_avg_stats.PF) AS AVG_AVG_OFF_PF,
+                COALESCE(AVG_AVG_OFF_PFD, p_avg_stats.PFD) AS AVG_AVG_OFF_PFD,
+                COALESCE(AVG_AVG_OFF_PTS, p_avg_stats.PTS) AS AVG_AVG_OFF_PTS,
+                COALESCE(AVG_AVG_OFF_PLUS_MINUS, p_avg_stats.PLUS_MINUS) AS AVG_AVG_OFF_PLUS_MINUS,
+                COALESCE(AVG_AVG_OFF_NBA_FANTASY_PTS, p_avg_stats.NBA_FANTASY_PTS) AS AVG_AVG_OFF_NBA_FANTASY_PTS,
+                COALESCE(AVG_AVG_OFF_DD2, p_avg_stats.DD2) AS AVG_AVG_OFF_DD2,
+                COALESCE(AVG_AVG_OFF_TD3, p_avg_stats.TD3) AS AVG_AVG_OFF_TD3
+
 
 
                 
@@ -272,21 +345,50 @@ def aggregate_training_data(con, filter_fp=-10, filter_season=START_YEAR):
                     ON p_log_future.SEASON = yesterday_date_map.SEASON
                         AND p_log_future.PLAYER_ID = yesterday_date_map.PLAYER_ID
                         AND p_log_future.GAME_DATE = yesterday_date_map.FUTURE_GAME_DATE
+    
+    
+                        
+                LEFT JOIN MAX_PLAYER_ON_OFF_DIFF AS max_player_on_off_diff
+                    ON max_player_on_off_diff.SEASON = p_log_today.SEASON
+                        AND max_player_on_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND max_player_on_off_diff.GAME_DATE = p_log_future.GAME_DATE
                 
-                LEFT JOIN AVG_PLAYER_INJURED AS avg_player_injured
-                    ON avg_player_injured.SEASON = p_log_today.SEASON
-                        AND avg_player_injured.PLAYER_ID = p_log_today.PLAYER_ID
-                        AND avg_player_injured.GAME_DATE = p_log_future.GAME_DATE
+                LEFT JOIN SUM_PLAYER_ON_OFF_DIFF AS sum_player_on_off_diff
+                    ON sum_player_on_off_diff.SEASON = p_log_today.SEASON
+                        AND sum_player_on_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND sum_player_on_off_diff.GAME_DATE = p_log_future.GAME_DATE
                 
-                LEFT JOIN MAX_PLAYER_INJURIES AS max_player_injured
-                    ON max_player_injured.SEASON = p_log_today.SEASON
-                        AND max_player_injured.PLAYER_ID = p_log_today.PLAYER_ID
-                        AND max_player_injured.GAME_DATE = p_log_future.GAME_DATE
+                LEFT JOIN MIN_PLAYER_ON_OFF_DIFF AS min_player_on_off_diff
+                    ON min_player_on_off_diff.SEASON = p_log_today.SEASON
+                        AND min_player_on_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND min_player_on_off_diff.GAME_DATE = p_log_future.GAME_DATE
+                        
+                LEFT JOIN MAX_PLAYER_OFF_DIFF AS max_player_off_diff
+                    ON max_player_off_diff.SEASON = p_log_today.SEASON
+                        AND max_player_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND max_player_off_diff.GAME_DATE = p_log_future.GAME_DATE
+                        
+                LEFT JOIN SUM_PLAYER_OFF_DIFF AS sum_player_off_diff
+                    ON sum_player_off_diff.SEASON = p_log_today.SEASON
+                        AND sum_player_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND sum_player_off_diff.GAME_DATE = p_log_future.GAME_DATE
+                        
+                LEFT JOIN AVG_PLAYER_OFF_DIFF AS avg_player_off_diff
+                    ON avg_player_off_diff.SEASON = p_log_today.SEASON
+                        AND avg_player_off_diff.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND avg_player_off_diff.GAME_DATE = p_log_future.GAME_DATE   
+                        
+                        
                 
                 INNER JOIN PLAYER_LOGS_ADVANCED AS adv_p_log_today
                     ON adv_p_log_today.SEASON = p_log_today.SEASON
                         AND adv_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
                         AND adv_p_log_today.GAME_DATE = p_log_today.GAME_DATE
+                
+                INNER JOIN PLAYER_LOGS_USAGE AS usg_p_log_today
+                    ON usg_p_log_today.SEASON = p_log_today.SEASON
+                        AND usg_p_log_today.PLAYER_ID = p_log_today.PLAYER_ID
+                        AND usg_p_log_today.GAME_DATE = p_log_today.GAME_DATE
                         
                 INNER JOIN GENERAL_TEAM_STATS_OPPONENT_ABBREVS AS team_stats_opponent
                     ON team_stats_opponent.TEAM_ABBREVIATION = SUBSTR(p_log_future.MATCHUP, -3)
