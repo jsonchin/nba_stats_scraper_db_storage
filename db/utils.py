@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 import db.config as DB_CONFIG
 import datetime
 from scrape.utils import PROPER_DATE_FORMAT
@@ -10,6 +11,8 @@ class DB_Query():
         self.column_names = column_names
         self.rows = rows
 
+    def to_df(self):
+        return pd.DataFrame(self.rows, columns=self.column_names)
 
 def execute_sql(sql, params=()):
     """
@@ -105,19 +108,23 @@ def get_table_names():
 def execute_sql_file(file_name, input_con=None):
     """
     Executes sql in the given file.
+    Returns the output of the last sql statement in the file.
+    Statements are separated by the semicolon (;) character.
     """
     if input_con is None:
         con = get_db_connection()
     else:
         con = input_con
+    output = None
     with open(file_name, 'r') as f:
         for cmd in f.read().split(';'):
-            con.execute(cmd)
+            output = con.execute(cmd)
         # close the con if it was created by this function
         if input_con is None:
             close_db_connection(con)
+    return output
 
-execute_sql_file_persist = execute_sql
+execute_sql_file_persist = execute_sql_file
 
 
 def get_db_connection():
