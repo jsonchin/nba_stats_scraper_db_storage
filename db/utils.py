@@ -14,35 +14,34 @@ class DB_Query():
     def to_df(self):
         return pd.DataFrame(self.rows, columns=self.column_names)
 
-def execute_sql(sql, params=()):
+def execute_sql(sql, input_con=None, params=()):
     """
     Executes a sql query and commits the result.
     params is a list of values that will be used
     in place of question marks in the sql statement.
 
+    The input_con parameter is useful for creating
+    temporary tables that will be persisted across a connection.
+
     Returns a DB_Query.
     """
-    con = get_db_connection()
-    result = execute_sql_persist(sql, con, params)
-    close_db_connection(con)
-    return result
+    if input_con is None:
+        con = get_db_connection()
+    else:
+        con = input_con
 
-
-def execute_sql_persist(sql, con, params=()):
-    """
-    Executes sql like "execute_sql" but takes in a
-    connection and does not close the connection.
-
-    This is useful for creating temporary tables
-    that will be persisted across a connection.
-    """
     if type(params) != tuple and type(params) != list:
         params = (params, )
     cur = con.execute(sql, params)
     results = cur.fetchall()
     column_names = [description[0] for description in cur.description] if cur.description is not None else None
+
+    if input_con is None:
+        close_db_connection(con)
+
     return DB_Query(column_names, results)
 
+execute_sql_persist = execute_sql
 
 def execute_many_sql(sql, seq_of_params):
     """
@@ -117,8 +116,8 @@ def execute_sql_file(file_name, input_con=None):
         con = input_con
     output = None
     with open(file_name, 'r') as f:
-        for cmd in f.read().split(';'):
-            output = con.execute(cmd)
+        for cmd in f.read().split(';')[:-1]:
+            output = execute_sql(cmd, con)
         # close the con if it was created by this function
         if input_con is None:
             close_db_connection(con)
