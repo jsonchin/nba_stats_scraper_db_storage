@@ -34,7 +34,7 @@ if args.training_data is not None:
     con = db.utils.get_db_connection()
     # execute other sql file to create temporary tables
     db.utils.execute_sql_file_persist('sqlite_cmds.sql', con)
-    # execute main aggregation sql function
-    db_query = db.utils.execute_sql_persist('training_data.sql', con)
+    # execute main aggregation sql script
+    db_query = db.utils.execute_sql_file_persist('training_data.sql', con)
 
     db.retrieve.df_to_csv(db_query, 'training_data_{}'.format(str(args.training_data)))
