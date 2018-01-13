@@ -31,6 +31,10 @@ if args.daily_scrape_file_path is not None:
     scrape.scraper.run_daily_scrapes(args.daily_scrape_file_path)
 
 if args.training_data is not None:
-    db.utils.execute_sql_file('sqlite_cmds.sql')
-    db.retrieve.df_to_csv(db.retrieve.aggregate_training_data(filter_fp=int(args.training_data)),
-                          'training_data_filter_FP_{}'.format(int(args.training_data)))
+    con = db.utils.get_db_connection()
+    # execute other sql file to create temporary tables
+    db.utils.execute_sql_file_persist('sqlite_cmds.sql', con)
+    # execute main aggregation sql function
+    db_query = db.utils.execute_sql_persist('training_data.sql', con)
+
+    db.retrieve.df_to_csv(db_query, 'training_data_{}'.format(str(args.training_data)))
