@@ -119,3 +119,4 @@ venv2/*
 .vscode/settings.json
 *.sql
 *.ipynb
+sql/notes.txt
