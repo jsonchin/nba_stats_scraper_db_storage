@@ -117,7 +117,11 @@ def execute_sql_file(file_name, input_con=None):
     output = None
     with open(file_name, 'r') as f:
         for cmd in f.read().split(';')[:-1]:
-            output = execute_sql(cmd, con)
+            try:
+                output = execute_sql(cmd, con)
+            except Exception as e:
+                print('Tried to execute this command but failed: {}'.format(cmd))
+                raise e
         # close the con if it was created by this function
         if input_con is None:
             close_db_connection(con)

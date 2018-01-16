@@ -1,4 +1,4 @@
-START_YEAR = 2010
+START_YEAR = 2013
 END_YEAR = 2018
 TRY_COUNT = 5   # amount of times to try to make an api request
 SLEEP_TIME = 2  # in seconds (time to wait after a failed request

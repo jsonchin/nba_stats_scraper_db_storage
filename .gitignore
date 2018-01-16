@@ -116,3 +116,7 @@ test/db_storage/databases/*
 
 csv_output/*.csv
 venv2/*
+.vscode/settings.json
+*.sql
+*.ipynb
+sql/notes.txt

@@ -118,6 +118,17 @@
   DAILY_SCRAPE: False
 
 
+
+- DATA_NAME: 'team_defense_dashboard_overall'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashptteamdefend?Conference=&DateFrom=&DateTo={DATE_TO}&DefenseCategory=Overall&Division=&GameSegment=&LastNGames=0&LeagueID=00&Location=&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PerMode=PerGame&Period=0&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&TeamID=0&VsConference=&VsDivision='
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'SEASON'
+    - 'DATE_TO'
+  DAILY_SCRAPE: False
+
+
+
 - DATA_NAME: 'player_positions'
   API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashplayerstats?College=&Conference=&Country=&DateFrom=&DateTo=&Division=&DraftPick=&DraftYear=&GameScope=&GameSegment=&Height=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition={PLAYER_POSITION}&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision=&Weight='
   PRIMARY_KEYS:
