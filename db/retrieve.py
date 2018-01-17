@@ -10,6 +10,7 @@ from collections import defaultdict
 import pandas as pd
 import os
 from scrape.config import START_YEAR
+from db.config import CSV_OUTPUT_PATH
 
 
 def fetch_player_ids():
@@ -72,17 +73,16 @@ def db_query(sql_query: str, params=(), con=None):
     return db_query_result.to_df()
 
 
-def df_to_csv(df: pd.DataFrame, file_name: str):
+def df_to_csv(df: pd.DataFrame, file_name: str, csv_output_path=CSV_OUTPUT_PATH):
     """
     Stores a pandas dataframe as a csv file with the given filename.
     Does not store the index of the dataframe and
     sets na (None or null values) as 0.
     """
-    OUTPUT_PATH = 'csv_output'
-    if not os.path.isdir(OUTPUT_PATH):
-        os.makedirs(OUTPUT_PATH)
+    if not os.path.isdir(csv_output_path):
+        os.makedirs(csv_output_path)
 
-    df.to_csv('{}/{}.csv'.format(OUTPUT_PATH, file_name), na_rep=0, index=False)
+    df.to_csv('{}/{}.csv'.format(csv_output_path, file_name), na_rep=0, index=False)
 
 
 def exists_table(table_name: str):
