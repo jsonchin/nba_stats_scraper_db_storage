@@ -37,8 +37,6 @@ def run_scrape_jobs(path_to_api_requests: str):
     Runs all of the scrape jobs specified in the
     yaml file at the given path.
     """
-
-
     global RUN_DAILY
     RUN_DAILY = False
 
