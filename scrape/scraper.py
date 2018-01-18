@@ -30,11 +30,18 @@ OTHER_FILLABLES = VALID_FILLABLES - set(SEASON_DEPENDENT_FILLABLES) - {'{SEASON}
 
 DATE_QUERY_PARAMS = {'DATE_TO'}
 
+RUN_DAILY = False
+
 def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrape jobs specified in the
     yaml file at the given path.
     """
+
+
+    global RUN_DAILY
+    RUN_DAILY = False
+
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
@@ -53,8 +60,9 @@ def run_daily_scrapes(path_to_api_requests: str):
     Runs all of the daily scrape jobs specified in the
     yaml file at the given path.
     """
-    CONFIG['SEASONS'] = [CONFIG['CURRENT_SEASON']]
-    CONFIG['DAILY'] = True
+    global RUN_DAILY
+    RUN_DAILY = True
+    
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
@@ -258,7 +266,10 @@ class FillableAPIRequest():
     def _get_fillable_values(fillable_type):
         if fillable_type not in FillableAPIRequest.fillable_values:
             if fillable_type == '{SEASON}':
-                values = CONFIG['SEASONS']
+                if RUN_DAILY:
+                    values = [CONFIG['CURRENT_SEASON']]
+                else:
+                    values = CONFIG['SEASONS']
             elif fillable_type == '{PLAYER_ID}':
                 values = db.retrieve.fetch_player_ids()
             elif fillable_type == '{GAME_DATE}':
@@ -270,7 +281,7 @@ class FillableAPIRequest():
                         game_date = values[season][i]
                         date_before = get_date_before(game_date)
                         values[season][i] = format_date_for_api_request(date_before)
-                if CONFIG['DAILY']:
+                if RUN_DAILY:
                     today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
                     values[CONFIG['CURRENT_SEASON']].append(
                         format_date_for_api_request(get_date_before(today_date)))
