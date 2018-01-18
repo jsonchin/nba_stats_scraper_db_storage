@@ -9,8 +9,7 @@ import db.utils
 from collections import defaultdict
 import pandas as pd
 import os
-from scrape.config import START_YEAR
-from db.config import CSV_OUTPUT_PATH
+from config import CONFIG
 
 
 def fetch_player_ids():
@@ -73,7 +72,7 @@ def db_query(sql_query: str, params=(), con=None):
     return db_query_result.to_df()
 
 
-def df_to_csv(df: pd.DataFrame, file_name: str, csv_output_path=CSV_OUTPUT_PATH):
+def df_to_csv(df: pd.DataFrame, file_name: str, csv_output_path=CONFIG['CSV_OUTPUT_PATH']):
     """
     Stores a pandas dataframe as a csv file with the given filename.
     Does not store the index of the dataframe and

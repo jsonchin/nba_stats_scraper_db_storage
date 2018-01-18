@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-import db.config as DB_CONFIG
+from config import CONFIG
 import datetime
 from scrape.utils import PROPER_DATE_FORMAT
 
@@ -131,7 +131,7 @@ execute_sql_file_persist = execute_sql_file
 
 
 def get_db_connection():
-    con = sqlite3.connect('{}/{}.db'.format(DB_CONFIG.DB_PATH, DB_CONFIG.DB_NAME))
+    con = sqlite3.connect('{}/{}.db'.format(CONFIG['DB_PATH'], CONFIG['DB_NAME']))
     return con
 
 
