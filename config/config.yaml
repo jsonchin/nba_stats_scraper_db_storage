@@ -1,0 +1,62 @@
+# DB
+DB_NAME: 'nba_stats' # the name of the sqlite/db file
+DB_PATH: 'db/databases' # location of the db file
+IGNORE_DUPLICATES: True # Whether or not to include duplicate rows
+
+# Paths
+CSV_OUTPUT_PATH: '../nba_predictions/data'
+
+# Scraping
+START_YEAR: 2013  # the first year to scrape from Ex) 2013 scrapes from the 2013-14 season
+END_YEAR: 2018    # the last year to scrape from Ex) 2018 scrapes up to the 2017-18 season
+TRY_COUNT: 5      # amount of times to try to make an api request
+SLEEP_TIME: 2     # in seconds (time to wait after a failed request
+VERBOSE: False    # whether to print what is currently being scraped
+MINIMIZE_SCRAPES: True    # scrapes from when it last scraped
+CURRENT_SEASON: '2017-18' # the current season (used for daily scrapes)
+
+# DB (Keys to never store as columns)
+GLOBAL_IGNORE_KEYS:
+- 'VIDEO_AVAILABLE'
+- 'AST_PCT_RANK'
+- 'AST_RATIO_RANK'
+- 'AST_TO_RANK'
+- 'DEF_RATING_RANK'
+- 'DREB_PCT_RANK'
+- 'EFG_PCT_RANK'
+- 'FGA_PG_RANK'
+- 'FGA_RANK'
+- 'FGM_PG_RANK'
+- 'FGM_RANK'
+- 'FG_PCT_RANK'
+- 'GP_RANK'
+- 'L_RANK'
+- 'MIN_RANK'
+- 'NET_RATING_RANK'
+- 'OFF_RATING_RANK'
+- 'OREB_PCT_RANK'
+- 'PACE_RANK'
+- 'PCT_AST_RANK'
+- 'PCT_BLKA_RANK'
+- 'PCT_BLK_RANK'
+- 'PCT_DREB_RANK'
+- 'PCT_FG3A_RANK'
+- 'PCT_FG3M_RANK'
+- 'PCT_FGA_RANK'
+- 'PCT_FGM_RANK'
+- 'PCT_FTA_RANK'
+- 'PCT_FTM_RANK'
+- 'PCT_OREB_RANK'
+- 'PCT_PFD_RANK'
+- 'PCT_PF_RANK'
+- 'PCT_PTS_RANK'
+- 'PCT_REB_RANK'
+- 'PCT_STL_RANK'
+- 'PCT_TOV_RANK'
+- 'PIE_RANK'
+- 'REB_PCT_RANK'
+- 'TM_TOV_PCT_RANK'
+- 'TS_PCT_RANK'
+- 'USG_PCT_RANK'
+- 'W_PCT_RANK'
+- 'W_RANK'

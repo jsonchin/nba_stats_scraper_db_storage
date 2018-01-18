@@ -4,7 +4,7 @@ Handles the creation of tables and storage into tables.
 from typing import List
 import db.retrieve
 import db.utils
-import db.config as DB_CONFIG
+from config import CONFIG
 
 PROTECTED_COL_NAMES = {'TO'}
 
@@ -130,7 +130,7 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
     Adds the rows to the table.
     """
     insert_values_sql_str = '({})'.format(', '.join(['?'] * len(headers)))
-    if DB_CONFIG.IGNORE_DUPLICATES:
+    if CONFIG['IGNORE_DUPLICATES']:
         sql_statement = """INSERT OR IGNORE INTO {} VALUES {};"""
     else:
         sql_statement = """INSERT INTO {} VALUES {};"""

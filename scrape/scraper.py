@@ -8,7 +8,7 @@ Ex. Scrape all ___ for each season for each player_id
 import db.retrieve
 import db.store
 import db.request_logger
-import scrape.config as SCRAPER_CONFIG
+from config import CONFIG
 
 from collections import OrderedDict
 
@@ -30,15 +30,20 @@ OTHER_FILLABLES = VALID_FILLABLES - set(SEASON_DEPENDENT_FILLABLES) - {'{SEASON}
 
 DATE_QUERY_PARAMS = {'DATE_TO'}
 
+RUN_DAILY = False
+
 def run_scrape_jobs(path_to_api_requests: str):
     """
     Runs all of the scrape jobs specified in the
     yaml file at the given path.
     """
+    global RUN_DAILY
+    RUN_DAILY = False
+
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
-            if SCRAPER_CONFIG.VERBOSE:
+            if CONFIG['VERBOSE']:
                 print('Running the current request:')
                 pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
@@ -53,8 +58,9 @@ def run_daily_scrapes(path_to_api_requests: str):
     Runs all of the daily scrape jobs specified in the
     yaml file at the given path.
     """
-    SCRAPER_CONFIG.SEASONS = [SCRAPER_CONFIG.CURRENT_SEASON]
-    SCRAPER_CONFIG.DAILY = True
+    global RUN_DAILY
+    RUN_DAILY = True
+    
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
@@ -88,7 +94,7 @@ class NBAResponse():
 
             indicies_to_remove = set()
             for i in range(len(self.headers)):
-                if self.headers[i] in SCRAPER_CONFIG.GLOBAL_IGNORE_KEYS:
+                if self.headers[i] in CONFIG['GLOBAL_IGNORE_KEYS']:
                     indicies_to_remove.add(i)
 
             if len(indicies_to_remove) > 0:
@@ -258,7 +264,10 @@ class FillableAPIRequest():
     def _get_fillable_values(fillable_type):
         if fillable_type not in FillableAPIRequest.fillable_values:
             if fillable_type == '{SEASON}':
-                values = SCRAPER_CONFIG.SEASONS
+                if RUN_DAILY:
+                    values = [CONFIG['CURRENT_SEASON']]
+                else:
+                    values = CONFIG['SEASONS']
             elif fillable_type == '{PLAYER_ID}':
                 values = db.retrieve.fetch_player_ids()
             elif fillable_type == '{GAME_DATE}':
@@ -270,9 +279,9 @@ class FillableAPIRequest():
                         game_date = values[season][i]
                         date_before = get_date_before(game_date)
                         values[season][i] = format_date_for_api_request(date_before)
-                if SCRAPER_CONFIG.DAILY:
+                if RUN_DAILY:
                     today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
-                    values[SCRAPER_CONFIG.CURRENT_SEASON].append(
+                    values[CONFIG['CURRENT_SEASON']].append(
                         format_date_for_api_request(get_date_before(today_date)))
             elif fillable_type == '{GAME_ID}':
                 values = db.retrieve.fetch_game_ids()
@@ -310,7 +319,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     Ex. http://stats.nba.com/stats/leaguedashplayerstats?...&Season={SEASON}&SeasonSegment=
 
     In this case, {SEASON} is fillable and this function will scrape
-    for all seasons defined in the scraper_config.yaml file.
+    for all seasons defined in the config.yaml file.
 
     Supported fillables include:
     - season
@@ -324,7 +333,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
     print(data_name)
     fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
-    if SCRAPER_CONFIG.VERBOSE:
+    if CONFIG['VERBOSE']:
         print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
@@ -332,7 +341,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         if overwrite or not db.request_logger.already_scraped(api_request.get_api_request_str()):
             api_request_str = api_request.get_api_request_str()
         else:
-            if SCRAPER_CONFIG.VERBOSE:
+            if CONFIG['VERBOSE']:
                 print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
             continue
 
@@ -375,13 +384,13 @@ def scrape(api_request):
                                 stream=True, allow_redirects=False)
         return response.json()
 
-    try_count = SCRAPER_CONFIG.TRY_COUNT
+    try_count = CONFIG['TRY_COUNT']
     while try_count > 0:
         try:
             response_json = scrape_json(api_request)
             return NBAResponse(response_json)
         except:
-            time.sleep(SCRAPER_CONFIG.SLEEP_TIME)
-            print('Sleeping on {} for {} seconds.'.format(api_request, SCRAPER_CONFIG.SLEEP_TIME))
+            time.sleep(CONFIG['SLEEP_TIME'])
+            print('Sleeping on {} for {} seconds.'.format(api_request, CONFIG['SLEEP_TIME']))
         try_count -= 1
     raise IOError('Wasn\'t able to make the following request: {}'.format(api_request))
