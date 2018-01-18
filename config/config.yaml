@@ -14,7 +14,6 @@ SLEEP_TIME: 2     # in seconds (time to wait after a failed request
 VERBOSE: False    # whether to print what is currently being scraped
 MINIMIZE_SCRAPES: True    # scrapes from when it last scraped
 CURRENT_SEASON: '2017-18' # the current season (used for daily scrapes)
-DAILY: False
 
 # DB (Keys to never store as columns)
 GLOBAL_IGNORE_KEYS:
