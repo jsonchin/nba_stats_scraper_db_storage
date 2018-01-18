@@ -1,7 +1,5 @@
 import unittest
-from db import config
-config.DB_NAME = 'test_db'
-config.DB_PATH = 'tests/db/databases'
+from tests.test_setup import init_test_db
 
 import db.initialize
 import db.retrieve
@@ -19,7 +17,7 @@ class TestDBStorage(unittest.TestCase):
 
     @classmethod
     def setUp(cls):
-        pass
+        init_test_db()
 
     def test_db_init(self):
         """
