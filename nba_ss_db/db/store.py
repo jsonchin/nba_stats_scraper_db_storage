@@ -2,7 +2,7 @@
 Handles the creation of tables and storage into tables.
 """
 from typing import List
-from nba_ss_db import db, CONFIG
+from .. import db, CONFIG
 
 PROTECTED_COL_NAMES = {'TO'}
 
