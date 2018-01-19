@@ -5,10 +5,8 @@ Ex. Scrape all ___ for each season
 Ex. Scrape all ___ for each season for each position
 Ex. Scrape all ___ for each season for each player_id
 """
-import db.retrieve
-import db.store
-import db.request_logger
-from config import CONFIG
+from nba_ss_db import db
+from nba_ss_db import CONFIG
 
 from collections import OrderedDict
 
@@ -18,7 +16,7 @@ import yaml
 import itertools
 import time
 import pprint
-from scrape.utils import *
+from nba_ss_db.scrape.utils import *
 
 from typing import Dict, List
 

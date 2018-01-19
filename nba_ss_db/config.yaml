@@ -1,6 +1,6 @@
 # DB
 DB_NAME: 'nba_stats' # the name of the sqlite/db file
-DB_PATH: 'db/databases' # location of the db file
+DB_PATH: 'nba_ss_db/db/databases' # location of the db file
 IGNORE_DUPLICATES: True # Whether or not to include duplicate rows
 
 # Paths

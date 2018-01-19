@@ -1,9 +1,7 @@
 import unittest
 
 from tests.test_setup import init_test_db
-
-import db.request_logger
-import db.utils
+from nba_ss_db import db
 
 
 class TestScraper(unittest.TestCase):

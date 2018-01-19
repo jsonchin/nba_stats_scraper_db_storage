@@ -2,9 +2,8 @@
 Handles the creation of tables and storage into tables.
 """
 from typing import List
-import db.retrieve
-import db.utils
-from config import CONFIG
+from nba_ss_db import db
+from nba_ss_db import CONFIG
 
 PROTECTED_COL_NAMES = {'TO'}
 

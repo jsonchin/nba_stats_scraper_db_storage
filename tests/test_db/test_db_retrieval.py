@@ -1,8 +1,7 @@
 import unittest
 from tests.test_setup import init_test_db
 
-import db.retrieve
-import db.utils
+from nba_ss_db import db
 import pandas as pd
 
 from collections import defaultdict

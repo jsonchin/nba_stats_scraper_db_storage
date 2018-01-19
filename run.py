@@ -1,7 +1,8 @@
 import argparse
-import scrape.scraper
-import db.utils
-import db.retrieve
+from nba_ss_db import db, scrape
+from nba_ss_db.scrape.scraper import run_scrape_jobs
+# from nba_ss_db.db.utils import drop_tables, clear_scrape_logs, get_db_connection, execute_sql_file_persist
+# from nba_ss_db.db.retrieve import df_to_csv
 
 parser = argparse.ArgumentParser(description='NBA Stats Scraper and Storage')
 parser.add_argument('--scrape', nargs='?', const='api_requests.yaml', dest='scrape_file_path',

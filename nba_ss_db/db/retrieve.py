@@ -5,11 +5,11 @@ for querying with standard SQL.
 
 The general query function will return a pandas dataframe.
 """
-import db.utils
+from nba_ss_db import db
 from collections import defaultdict
 import pandas as pd
 import os
-from config import CONFIG
+from nba_ss_db import CONFIG
 
 
 def fetch_player_ids():
