@@ -1,8 +1,7 @@
 import unittest
 from tests.test_setup import init_test_db
 
-import db.initialize
-import db.retrieve
+from nba_ss_db import db
 
 
 class TestDBStorage(unittest.TestCase):

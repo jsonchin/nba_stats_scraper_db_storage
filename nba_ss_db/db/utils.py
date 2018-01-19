@@ -1,8 +1,8 @@
 import sqlite3
 import pandas as pd
-from config import CONFIG
+from nba_ss_db import CONFIG
 import datetime
-from scrape.utils import PROPER_DATE_FORMAT
+from nba_ss_db.scrape.utils import PROPER_DATE_FORMAT
 
 
 class DB_Query():
