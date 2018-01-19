@@ -1,5 +1,5 @@
 from datetime import datetime
-from nba_ss_db import db
+from .. import db
 
 
 def log_request(api_request, table_name):

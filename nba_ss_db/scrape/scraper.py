@@ -5,8 +5,7 @@ Ex. Scrape all ___ for each season
 Ex. Scrape all ___ for each season for each position
 Ex. Scrape all ___ for each season for each player_id
 """
-from nba_ss_db import db
-from nba_ss_db import CONFIG
+from .. import db, CONFIG
 
 from collections import OrderedDict
 
