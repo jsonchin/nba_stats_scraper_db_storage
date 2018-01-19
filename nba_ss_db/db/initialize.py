@@ -4,7 +4,7 @@ detailing when requests were made for logging purposes and
 to prevent double scraping.
 """
 
-from nba_ss_db import db
+from .. import db
 
 def init_db():
     """
