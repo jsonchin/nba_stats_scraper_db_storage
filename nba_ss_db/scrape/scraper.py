@@ -15,7 +15,7 @@ import yaml
 import itertools
 import time
 import pprint
-from nba_ss_db.scrape.utils import *
+from ..scrape.utils import *
 
 from typing import Dict, List
 
