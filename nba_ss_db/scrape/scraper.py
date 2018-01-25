@@ -44,9 +44,11 @@ def run_scrape_jobs(path_to_api_requests: str):
                 print('Running the current request:')
                 pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
+            resultSetIndex = 0 if 'RESULT_SET_INDEX' not in api_request else api_request['RESULT_SET_INDEX']
             general_scraper(api_request['API_ENDPOINT'],
                             api_request['DATA_NAME'],
                             api_request['PRIMARY_KEYS'],
+                            resultSetIndex,
                             ignore_keys)
 
 
@@ -65,9 +67,11 @@ def run_daily_scrapes(path_to_api_requests: str):
             print('Running the current request:')
             pprint.pprint(api_request, indent=2)
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
+            resultSetIndex = 0 if 'RESULT_SET_INDEX' not in api_request else api_request['RESULT_SET_INDEX']
             general_scraper(api_request['API_ENDPOINT'],
                             api_request['DATA_NAME'],
                             api_request['PRIMARY_KEYS'],
+                            resultSetIndex,
                             ignore_keys=ignore_keys,
                             overwrite=overwrite_scrape)
 
@@ -77,13 +81,13 @@ class NBAResponse():
     Represents a json response from stats.nba.com.
     """
 
-    def __init__(self, json_response: Dict):
+    def __init__(self, json_response: Dict, resultSetIndex: int):
         # corresponding to how NBA json responses are formatted
         def access_headers(json):
-            return json['resultSets'][0]['headers']
+            return json['resultSets'][resultSetIndex]['headers']
 
         def access_row_set(json):
-            return json['resultSets'][0]['rowSet']
+            return json['resultSets'][resultSetIndex]['rowSet']
 
         try:
             self._headers = [header.upper() for header in access_headers(json_response)]
@@ -309,7 +313,7 @@ def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
         return api_request.get_api_request_str()
 
 
-def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], ignore_keys=set(), overwrite=False):
+def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], resultSetIndex, ignore_keys=set(), overwrite=False):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -344,7 +348,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
 
         print(api_request)
 
-        nba_response = scrape(api_request_str)
+        nba_response = scrape(api_request_str, resultSetIndex)
 
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
@@ -366,7 +370,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         db.request_logger.log_request(api_request.get_api_request_str(), data_name)
 
 
-def scrape(api_request):
+def scrape(api_request, resultSetIndex):
     """
     Tries to make an api_request to stats.nba.com multiple times and
     returns a NBAResponse object containing rows and headers.
@@ -385,7 +389,7 @@ def scrape(api_request):
     while try_count > 0:
         try:
             response_json = scrape_json(api_request)
-            return NBAResponse(response_json)
+            return NBAResponse(response_json, resultSetIndex)
         except:
             time.sleep(CONFIG['SLEEP_TIME'])
             print('Sleeping on {} for {} seconds.'.format(api_request, CONFIG['SLEEP_TIME']))

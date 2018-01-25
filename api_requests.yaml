@@ -16,6 +16,15 @@
   IGNORE_KEYS: ["SEASON_ID", "TEAM_ID", "TEAM_ABBREVIATION", "TEAM_NAME", "GAME_ID", "MATCHUP", "WL", "MIN", "FGM", "FGA", "FG_PCT", "FG3M", "FG3A", "FG3_PCT", "FTM", "FTA", "FT_PCT", "OREB", "DREB", "REB", "AST", "STL", "BLK", "TOV", "PF", "PTS", "PLUS_MINUS", "VIDEO_AVAILABLE"]
   DAILY_SCRAPE: True
 
+- DATA_NAME: 'game_inactive_players'
+  API_ENDPOINT: 'https://stats.nba.com/stats/boxscoresummaryv2?GameID={GAME_ID}&Season={SEASON}'
+  PRIMARY_KEYS:
+    - 'SEASON'
+    - 'GAME_ID'
+    - 'PLAYER_ID'
+  DAILY_SCRAPE: False
+  RESULT_SET_INDEX: 3
+  
 
 - DATA_NAME: 'player_logs'
   API_ENDPOINT: 'http://stats.nba.com/stats/playergamelogs?DateFrom=&DateTo=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=Totals&Period=0&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&VsConference=&VsDivision='
@@ -83,6 +92,15 @@
 
 - DATA_NAME: 'general_team_stats'
   API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashteamstats?Conference=&DateFrom=&DateTo={DATE_TO}&Division=&GameScope=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Advanced&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision='
+  PRIMARY_KEYS:
+    - 'TEAM_ID'
+    - 'SEASON'
+    - 'DATE_TO'
+  DAILY_SCRAPE: False
+
+  
+- DATA_NAME: 'general_traditional_team_stats'
+  API_ENDPOINT: 'http://stats.nba.com/stats/leaguedashteamstats?Conference=&DateFrom=&DateTo={DATE_TO}&Division=&GameScope=&GameSegment=&LastNGames=0&LeagueID=00&Location=&MeasureType=Base&Month=0&OpponentTeamID=0&Outcome=&PORound=0&PaceAdjust=N&PerMode=PerGame&Period=0&PlayerExperience=&PlayerPosition=&PlusMinus=N&Rank=N&Season={SEASON}&SeasonSegment=&SeasonType=Regular+Season&ShotClockRange=&StarterBench=&TeamID=0&VsConference=&VsDivision='
   PRIMARY_KEYS:
     - 'TEAM_ID'
     - 'SEASON'
