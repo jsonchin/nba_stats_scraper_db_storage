@@ -9,19 +9,18 @@ from ..scrape.utils import get_date_before, format_date_for_api_request, PROPER_
 
 QUERY_PARAM_VALUES = {}
 
-def get_query_param_values(query_param, is_daily=False):
+def get_possible_query_param_values(query_param, is_daily=False):
     """
     Valid query parameters are:
     - {SEASON}
-    - {PLAYER_ID}
-    - {GAME_ID}
     - {PLAYER_POSITION}
 
+    - {GAME_ID}
+    - {PLAYER_ID}
     - {GAME_DATE}
     - {DATE_TO}
 
-    The last two {GAME_DATE} and {DATE_TO} return a dictionary
-    mapping season to possible values.
+    The last four return a dictionary mapping season to possible values.
 
     All other query parameters return a list of values to iterate through.
     """
