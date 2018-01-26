@@ -5,29 +5,16 @@ Ex. Scrape all ___ for each season
 Ex. Scrape all ___ for each season for each position
 Ex. Scrape all ___ for each season for each player_id
 """
-from .. import db, CONFIG
-
-from collections import OrderedDict
-
-import urllib.parse
-import requests
-import yaml
-import itertools
+from typing import Dict, List
 import time
 import pprint
-from ..scrape.utils import *
-import query_param_values
+import requests
+import yaml
+
+from .. import db, CONFIG
 from .fillable_api_request import FillableAPIRequest
+from .utils import format_str_to_nba_response_header
 
-from typing import Dict, List
-
-VALID_FILLABLES = {'{SEASON}', '{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}', '{PLAYER_POSITION}'}
-
-SEASON_DEPENDENT_FILLABLES = ['{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}']
-
-OTHER_FILLABLES = VALID_FILLABLES - set(SEASON_DEPENDENT_FILLABLES) - {'{SEASON}'}
-
-DATE_QUERY_PARAMS = {'DATE_TO'}
 
 RUN_DAILY = False
 
@@ -94,27 +81,6 @@ class NBAResponse():
         try:
             self._headers = [header.upper() for header in access_headers(json_response)]
             self._rows = access_row_set(json_response)
-
-            indicies_to_remove = set()
-            for i in range(len(self.headers)):
-                if self.headers[i] in CONFIG['GLOBAL_IGNORE_KEYS']:
-                    indicies_to_remove.add(i)
-
-            if len(indicies_to_remove) > 0:
-                self._headers = [self.headers[i] for i in range(len(self.headers)) if i not in indicies_to_remove]
-
-                for r in range(len(self.rows)):
-                    row = self.rows[r]
-                    self.rows[r] = [row[i] for i in range(len(row)) if i not in indicies_to_remove]
-
-            # Other choice of the date format given in a response is OCT 29, 2016
-            if 'GAME_DATE' in self.headers:
-                i = self.headers.index('GAME_DATE')
-                example_date = self.rows[0][i]
-                if not is_proper_date_format(example_date):
-                    for r in range(len(self.rows)):
-                        self.rows[r][i] = format_date(self.rows[r][i])
-
         except ValueError:
             raise ValueError('Unexpected JSON formatting of headers and rows.')
 
@@ -171,17 +137,13 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         api_request_str = api_request.api_request
         nba_response = scrape(api_request_str, resultSetIndex)
 
-        # format the nba_response before storing it
+        # add any primary key columns from query params
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
 
             # add any primary keys not provided in the response
             if key not in nba_response.headers:
                 col_val = api_request.query_params[key]
-
-                # format dates
-                if key in DATE_QUERY_PARAMS and not is_proper_date_format(col_val):
-                    col_val = format_date(col_val)
 
                 if col_val is not None:
                     nba_response.add_col(key, col_val)

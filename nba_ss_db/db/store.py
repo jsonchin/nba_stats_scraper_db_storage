@@ -3,8 +3,12 @@ Handles the creation of tables and storage into tables.
 """
 from typing import List
 from .. import db, CONFIG
+from ..scrape.utils import is_proper_date_format, format_date
 
 PROTECTED_COL_NAMES = {'TO'}
+
+DATE_QUERY_PARAMS = {'GAME_DATE', 'DATE_TO'}
+
 
 def store_nba_response(data_name: str, nba_response, primary_keys=(), ignore_keys=set()):
     """
@@ -22,37 +26,22 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
     if len(l_nba_response) == 0:
         raise ValueError('List of nba responses was empty.')
 
-    def filter_columns(nba_response, desired_column_headers):
-        """
-        Keeps all columns specified in desired_column_headers
-        and returns the processed list of rows.
-        """
-        try:
-            desired_column_indicies = [headers.index(header) for header in desired_column_headers]
-        except ValueError:
-            raise ValueError('nba response headers are inconsistent: {} \n\n {}'.format(
-                nba_response.headers,
-                headers
-            ))
-
-        rows = nba_response.rows
-        processed_rows = []
-        for row in rows:
-            processed_rows.append([row[i] for i in desired_column_indicies])
-        return processed_rows
-
-    def rename_protected_col_names(column_names: List[str]):
-        return [col_name if col_name not in PROTECTED_COL_NAMES
-                else 'NBA_{}'.format(col_name) for col_name in column_names]
-
-
     # process the rows to only contain the desired columns
-    headers = l_nba_response[0].headers
-    desired_column_headers = [header for header in headers if header not in ignore_keys]
-
+    combined_ignore_keys = ignore_keys | CONFIG['GLOBAL_IGNORE_KEYS']
+    desired_column_headers = [
+        header for header in l_nba_response[0].headers if header not in combined_ignore_keys]
     processed_rows = []
     for nba_response in l_nba_response:
         processed_rows.extend(filter_columns(nba_response, desired_column_headers))
+    
+    # format date
+    for header_i, header in enumerate(desired_column_headers):
+        if header in DATE_QUERY_PARAMS:
+            example_date = processed_rows[0][header_i]
+            if not is_proper_date_format(example_date):
+                for row_i, row in enumerate(processed_rows):
+                    processed_rows[row_i][header_i] = format_date(row[header_i])
+
 
     # rename the columns to remove protected names
     renamed_column_headers = rename_protected_col_names(desired_column_headers)
@@ -61,6 +50,36 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
         add_to_table(data_name, renamed_column_headers, processed_rows)
     else:
         create_table_with_data(data_name, renamed_column_headers, processed_rows, primary_keys)
+
+
+def filter_columns(nba_response, desired_column_headers):
+    """
+    Keeps all columns specified in desired_column_headers
+    and returns the processed list of rows.
+    """
+    try:
+        desired_column_indicies = [nba_response.headers.index(
+            header) for header in desired_column_headers]
+    except ValueError:
+        raise ValueError('nba response headers are inconsistent: {} \n\n {}'.format(
+            nba_response.headers,
+            desired_column_headers
+        ))
+
+    rows = nba_response.rows
+    processed_rows = []
+    for row in rows:
+        processed_rows.append([row[i] for i in desired_column_indicies])
+    return processed_rows
+
+
+def rename_protected_col_names(column_names: List[str]):
+    """
+    Returns a new list with renamed columns.
+    Renamed columns have a NBA_ prepended.
+    """
+    return [col_name if col_name not in PROTECTED_COL_NAMES
+            else 'NBA_{}'.format(col_name) for col_name in column_names]
 
 
 def create_table_with_data(table_name: str, headers: List[str], rows: List[List], primary_keys=()):
@@ -134,3 +153,68 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
         sql_statement = """INSERT INTO {} VALUES {};"""
 
     db.utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
+
+
+def is_proper_date_format(date_str):
+    """
+    Returns True if date_str is in YYYY-MM-DD format.
+
+    >>> is_proper_date_format('2016-10-29')
+    True
+    >>> is_proper_date_format('11/10/2017')
+    False
+    >>> is_proper_date_format('OCT 29, 2016')
+    False
+    >>> is_proper_date_format('2016-10-29T000001')
+    False
+    """
+    try:
+        datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
+        return True
+    except ValueError:
+        return False
+
+
+def format_date(date_str):
+    """
+    Formats the date_str into YYYY-MM-DD format.
+
+    Throws an exception if the date format was unsupported
+
+    Add translations as they show up:
+    Currently supported:
+    OCT 29, 2016
+    YYYY-MM-DD[extra_chars]
+
+    >>> format_date('OCT 29, 2016')
+    '2016-10-29'
+    >>> format_date('11/10/2017')
+    '2017-11-10'
+    >>> format_date('2016-10-29T000001')
+    '2016-10-29'
+
+    """
+    # OCT 29, 2016
+    try:
+        return datetime.datetime.strftime(
+            datetime.datetime.strptime(date_str, '%b %d, %Y'),
+            PROPER_DATE_FORMAT
+        )
+    except ValueError:
+        pass
+
+    # MM/DD/YYYY
+    try:
+        return datetime.datetime.strftime(
+            datetime.datetime.strptime(date_str, '%m/%d/%Y'),
+            PROPER_DATE_FORMAT
+        )
+    except ValueError:
+        pass
+
+    # YYYY-MM-DD[extra_chars]
+    return datetime.datetime.strftime(
+        datetime.datetime.strptime(
+            date_str[:len(EXAMPLE_PROPER_DATE)], PROPER_DATE_FORMAT),
+        PROPER_DATE_FORMAT
+    )
