@@ -33,8 +33,8 @@ class FillableAPIRequest():
         self.is_daily = is_daily
 
         fillable_names, fillable_choices = self._parse_fillable_api_request()
-        self.fillable_choices = fillable_names
-        self.fillable_names = fillable_choices
+        self.fillable_names = fillable_names
+        self.fillable_choices = fillable_choices
 
     def generate_api_requests(self):
         """
@@ -84,7 +84,7 @@ class FillableAPIRequest():
 
                 for dependent_fillable in dependent_query_param_names:
                     dependent_values = get_possible_query_param_values(
-                        dependent_fillable, self.is_daily)[season]
+                        '{' + dependent_fillable + '}', self.is_daily)[season]
                     seasonal_choices.append(dependent_values)
 
                 grouped_choices.extend(itertools.product(*seasonal_choices))
