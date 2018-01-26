@@ -9,7 +9,7 @@ from ..scrape.utils import get_date_before, format_date_for_api_request, PROPER_
 
 QUERY_PARAM_VALUES = {}
 
-def get_possible_query_param_values(query_param, is_daily=False):
+def get_possible_query_param_values(query_param, is_daily):
     """
     Valid query parameters are:
     - {SEASON}
@@ -24,13 +24,6 @@ def get_possible_query_param_values(query_param, is_daily=False):
 
     All other query parameters return a list of values to iterate through.
     """
-    if is_daily:
-        if query_param == '{SEASON}':
-            return [CONFIG['CURRENT_SEASON']]
-        elif '{DATE_TO}':
-            today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
-            return {CONFIG['CURRENT_SEASON']: [format_date_for_api_request(get_date_before(today_date))]}
-
     if query_param not in QUERY_PARAM_VALUES:
         if query_param == '{SEASON}':
             values = CONFIG['SEASONS']
@@ -53,5 +46,13 @@ def get_possible_query_param_values(query_param, is_daily=False):
             raise ValueError(
                 'Unsupported fillable type: {}'.format(query_param))
         QUERY_PARAM_VALUES[query_param] = values
+
+    if is_daily:
+        if query_param == '{SEASON}':
+            return [CONFIG['CURRENT_SEASON']]
+        elif '{DATE_TO}':
+            today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
+            prev_dates = QUERY_PARAM_VALUES[query_param][CONFIG['CURRENT_SEASON']]
+            return {CONFIG['CURRENT_SEASON']: prev_dates + [format_date_for_api_request(get_date_before(today_date))]}
 
     return QUERY_PARAM_VALUES[query_param]

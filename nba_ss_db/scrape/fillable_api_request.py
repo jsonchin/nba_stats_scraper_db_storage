@@ -24,12 +24,13 @@ class FillableAPIRequest():
     Represents a fillable api request.
     """
 
-    def __init__(self, fillable_api_request: str):
+    def __init__(self, fillable_api_request: str, is_daily: bool):
         """
         Given a fillable_api_request, parses the fillable choices
         and adds any primary keys if necesssary.
         """
         self.fillable_api_request = fillable_api_request
+        self.is_daily = is_daily
 
         fillable_names, fillable_choices = self._parse_fillable_api_request()
         self.fillable_choices = fillable_names
@@ -77,12 +78,13 @@ class FillableAPIRequest():
 
             # go through each season and get possible combinations of query params
             grouped_choices = []
-            for season in get_possible_query_param_values('{SEASON}'):
+            for season in get_possible_query_param_values('{SEASON}', self.is_daily):
                 # a list of list of values for each dependent query param
                 seasonal_choices = [[season]]
 
                 for dependent_fillable in dependent_query_param_names:
-                    dependent_values = get_possible_query_param_values(dependent_fillable)[season]
+                    dependent_values = get_possible_query_param_values(
+                        dependent_fillable, self.is_daily)[season]
                     seasonal_choices.append(dependent_values)
 
                 grouped_choices.extend(itertools.product(*seasonal_choices))
@@ -98,7 +100,8 @@ class FillableAPIRequest():
         for fillable_type in OTHER_FILLABLES:
             if fillable_type in self.fillable_api_request:
                 query_param_names.append(fillable_type[1:-1])
-                query_param_choices.append(get_possible_query_param_values(fillable_type))
+                query_param_choices.append(
+                    get_possible_query_param_values(fillable_type, self.is_daily))
         
         return query_param_names, query_param_choices
 

@@ -16,29 +16,27 @@ from .fillable_api_request import FillableAPIRequest
 from .utils import format_str_to_nba_response_header
 
 
-RUN_DAILY = False
-
-def run_scrape_jobs(path_to_api_requests: str):
+def run_scrape_jobs(path_to_api_requests: str, is_daily=False):
     """
     Runs all of the scrape jobs specified in the
     yaml file at the given path.
     """
-    global RUN_DAILY
-    RUN_DAILY = False
-
     with open(path_to_api_requests, 'r') as f:
         l_requests = yaml.load(f)
         for api_request in l_requests:
             if CONFIG['VERBOSE']:
                 print('Running the current request:')
                 pprint.pprint(api_request, indent=2)
+            overwrite_scrape = api_request['DAILY_SCRAPE'] and is_daily
             ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
-            resultSetIndex = 0 if 'RESULT_SET_INDEX' not in api_request else api_request['RESULT_SET_INDEX']
-            general_scraper(api_request['API_ENDPOINT'],
-                            api_request['DATA_NAME'],
-                            api_request['PRIMARY_KEYS'],
-                            resultSetIndex,
-                            ignore_keys)
+            result_set_index = 0 if 'RESULT_SET_INDEX' not in api_request else api_request['RESULT_SET_INDEX']
+            general_scraper(fillable_api_request_str=api_request['API_ENDPOINT'],
+                            data_name=api_request['DATA_NAME'],
+                            primary_keys=api_request['PRIMARY_KEYS'],
+                            result_set_index=result_set_index,
+                            ignore_keys=ignore_keys,
+                            overwrite=overwrite_scrape,
+                            is_daily=is_daily)
 
 
 def run_daily_scrapes(path_to_api_requests: str):
@@ -46,23 +44,7 @@ def run_daily_scrapes(path_to_api_requests: str):
     Runs all of the daily scrape jobs specified in the
     yaml file at the given path.
     """
-    global RUN_DAILY
-    RUN_DAILY = True
-    
-    with open(path_to_api_requests, 'r') as f:
-        l_requests = yaml.load(f)
-        for api_request in l_requests:
-            overwrite_scrape = api_request['DAILY_SCRAPE']
-            print('Running the current request:')
-            pprint.pprint(api_request, indent=2)
-            ignore_keys = set(api_request['IGNORE_KEYS']) if 'IGNORE_KEYS' in api_request else set()
-            resultSetIndex = 0 if 'RESULT_SET_INDEX' not in api_request else api_request['RESULT_SET_INDEX']
-            general_scraper(api_request['API_ENDPOINT'],
-                            api_request['DATA_NAME'],
-                            api_request['PRIMARY_KEYS'],
-                            resultSetIndex,
-                            ignore_keys=ignore_keys,
-                            overwrite=overwrite_scrape)
+    run_scrape_jobs(path_to_api_requests, is_daily=True)
 
 
 class NBAResponse():
@@ -101,7 +83,9 @@ class NBAResponse():
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
 
-def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], resultSetIndex, ignore_keys=set(), overwrite=False):
+def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str],
+                    result_set_index, ignore_keys=set(), overwrite=False,
+                    is_daily=False):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
 
@@ -121,7 +105,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     """
 
     print(data_name)
-    fillable_api_request = FillableAPIRequest(fillable_api_request_str)
+    fillable_api_request = FillableAPIRequest(fillable_api_request_str, is_daily)
     if CONFIG['VERBOSE']:
         print(fillable_api_request)
 
@@ -135,7 +119,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         print(api_request)
 
         api_request_str = api_request.api_request
-        nba_response = scrape(api_request_str, resultSetIndex)
+        nba_response = scrape(api_request_str, result_set_index)
 
         # add any primary key columns from query params
         for key in primary_keys:
@@ -157,7 +141,7 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
         db.request_logger.log_request(api_request_str, data_name)
 
 
-def scrape(api_request, resultSetIndex):
+def scrape(api_request, result_set_index):
     """
     Tries to make an api_request to stats.nba.com multiple times and
     returns a NBAResponse object containing rows and headers.
@@ -176,7 +160,7 @@ def scrape(api_request, resultSetIndex):
     while try_count > 0:
         try:
             response_json = scrape_json(api_request)
-            return NBAResponse(response_json, resultSetIndex)
+            return NBAResponse(response_json, result_set_index)
         except:
             time.sleep(CONFIG['SLEEP_TIME'])
             print('Sleeping on {} for {} seconds.'.format(api_request, CONFIG['SLEEP_TIME']))
