@@ -50,7 +50,7 @@ def get_possible_query_param_values(query_param, is_daily):
     if is_daily:
         if query_param == '{SEASON}':
             return [CONFIG['CURRENT_SEASON']]
-        elif '{DATE_TO}':
+        elif query_param == '{DATE_TO}':
             today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
             prev_dates = QUERY_PARAM_VALUES[query_param][CONFIG['CURRENT_SEASON']]
             return {CONFIG['CURRENT_SEASON']: prev_dates + [format_date_for_api_request(get_date_before(today_date))]}
