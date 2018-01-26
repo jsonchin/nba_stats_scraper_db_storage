@@ -16,6 +16,7 @@ import itertools
 import time
 import pprint
 from ..scrape.utils import *
+import query_param_values
 
 from typing import Dict, List
 
@@ -137,7 +138,6 @@ class FillableAPIRequest():
     """
     Represents a fillable api request.
     """
-    fillable_values = {}
     SEASON_KEYWORD = '&Season='
     SEASON_LENGTH = len('2017-18')
 
@@ -229,12 +229,12 @@ class FillableAPIRequest():
                     self._fillable_names.append(dependent_fillable[1:-1])
 
             grouped_choices = []
-            for season in FillableAPIRequest._get_fillable_values('{SEASON}'):
+            for season in query_param_values.get_query_param_values('{SEASON}'):
                 fillable_values = []
 
                 for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
                     if dependent_fillable in self.fillable_api_request:
-                        fillable_values.append(FillableAPIRequest._get_fillable_values(dependent_fillable)[season])
+                        fillable_values.append(query_param_values.get_query_param_values(dependent_fillable)[season])
 
                 for grouped_choice in itertools.product(*fillable_values):
                     grouped_choice = [season] + list(grouped_choice)
@@ -243,7 +243,7 @@ class FillableAPIRequest():
             self._fillable_choices.append(grouped_choices)
 
         elif '{PLAYER_ID}' in self.fillable_api_request:
-            player_ids_by_season = FillableAPIRequest._get_fillable_values('{PLAYER_ID}')
+            player_ids_by_season = query_param_values.get_query_param_values('{PLAYER_ID}')
             self._fillable_names.append('PLAYER_ID')
 
             # find what the season is in the api request
@@ -258,42 +258,7 @@ class FillableAPIRequest():
         for fillable_type in OTHER_FILLABLES:
             if fillable_type in self.fillable_api_request:
                 self._fillable_names.append(fillable_type[1:-1])
-                self._fillable_choices.append(FillableAPIRequest._get_fillable_values(fillable_type))
-
-
-    @staticmethod
-    def _get_fillable_values(fillable_type):
-        if fillable_type not in FillableAPIRequest.fillable_values:
-            if fillable_type == '{SEASON}':
-                if RUN_DAILY:
-                    values = [CONFIG['CURRENT_SEASON']]
-                else:
-                    values = CONFIG['SEASONS']
-            elif fillable_type == '{PLAYER_ID}':
-                values = db.retrieve.fetch_player_ids()
-            elif fillable_type == '{GAME_DATE}':
-                values = db.retrieve.fetch_game_dates()
-            elif fillable_type == '{DATE_TO}':
-                values = db.retrieve.fetch_game_dates()
-                for season in values:
-                    for i in range(len(values[season])):
-                        game_date = values[season][i]
-                        date_before = get_date_before(game_date)
-                        values[season][i] = format_date_for_api_request(date_before)
-                if RUN_DAILY:
-                    today_date = datetime.datetime.today().strftime(PROPER_DATE_FORMAT)
-                    values[CONFIG['CURRENT_SEASON']].append(
-                        format_date_for_api_request(get_date_before(today_date)))
-            elif fillable_type == '{GAME_ID}':
-                values = db.retrieve.fetch_game_ids()
-            elif fillable_type == '{PLAYER_POSITION}':
-                values = ['G', 'F', 'C']
-            else:
-                raise ValueError('Unsupported fillable type: {}'.format(fillable_type))
-            FillableAPIRequest.fillable_values[fillable_type] = values
-            return values
-        else:
-            return FillableAPIRequest.fillable_values[fillable_type]
+                self._fillable_choices.append(query_param_values.get_query_param_values(fillable_type))
 
 
 def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
