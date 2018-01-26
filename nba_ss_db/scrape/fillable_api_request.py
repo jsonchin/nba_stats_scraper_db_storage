@@ -10,7 +10,7 @@ from collections import OrderedDict
 from typing import List
 
 from .utils import flatten_list
-from query_param_values import get_possible_query_param_values
+from .query_param_values import get_possible_query_param_values
 
 
 VALID_FILLABLES = {'{SEASON}', '{PLAYER_ID}', '{GAME_DATE}', '{DATE_TO}', '{GAME_ID}', '{PLAYER_POSITION}'}
