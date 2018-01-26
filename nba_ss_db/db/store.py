@@ -27,13 +27,13 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
         raise ValueError('List of nba responses was empty.')
 
     # process the rows to only contain the desired columns
-    combined_ignore_keys = ignore_keys | CONFIG['GLOBAL_IGNORE_KEYS']
+    combined_ignore_keys = ignore_keys | set(CONFIG['GLOBAL_IGNORE_KEYS'])
     desired_column_headers = [
         header for header in l_nba_response[0].headers if header not in combined_ignore_keys]
     processed_rows = []
     for nba_response in l_nba_response:
         processed_rows.extend(filter_columns(nba_response, desired_column_headers))
-    
+
     # format date
     for header_i, header in enumerate(desired_column_headers):
         if header in DATE_QUERY_PARAMS:
@@ -41,7 +41,6 @@ def store_nba_responses(data_name: str, l_nba_response: List, primary_keys=(), i
             if not is_proper_date_format(example_date):
                 for row_i, row in enumerate(processed_rows):
                     processed_rows[row_i][header_i] = format_date(row[header_i])
-
 
     # rename the columns to remove protected names
     renamed_column_headers = rename_protected_col_names(desired_column_headers)
@@ -153,68 +152,3 @@ def add_to_table(table_name: str, headers: List[str], rows: List[List]):
         sql_statement = """INSERT INTO {} VALUES {};"""
 
     db.utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
-
-
-def is_proper_date_format(date_str):
-    """
-    Returns True if date_str is in YYYY-MM-DD format.
-
-    >>> is_proper_date_format('2016-10-29')
-    True
-    >>> is_proper_date_format('11/10/2017')
-    False
-    >>> is_proper_date_format('OCT 29, 2016')
-    False
-    >>> is_proper_date_format('2016-10-29T000001')
-    False
-    """
-    try:
-        datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT)
-        return True
-    except ValueError:
-        return False
-
-
-def format_date(date_str):
-    """
-    Formats the date_str into YYYY-MM-DD format.
-
-    Throws an exception if the date format was unsupported
-
-    Add translations as they show up:
-    Currently supported:
-    OCT 29, 2016
-    YYYY-MM-DD[extra_chars]
-
-    >>> format_date('OCT 29, 2016')
-    '2016-10-29'
-    >>> format_date('11/10/2017')
-    '2017-11-10'
-    >>> format_date('2016-10-29T000001')
-    '2016-10-29'
-
-    """
-    # OCT 29, 2016
-    try:
-        return datetime.datetime.strftime(
-            datetime.datetime.strptime(date_str, '%b %d, %Y'),
-            PROPER_DATE_FORMAT
-        )
-    except ValueError:
-        pass
-
-    # MM/DD/YYYY
-    try:
-        return datetime.datetime.strftime(
-            datetime.datetime.strptime(date_str, '%m/%d/%Y'),
-            PROPER_DATE_FORMAT
-        )
-    except ValueError:
-        pass
-
-    # YYYY-MM-DD[extra_chars]
-    return datetime.datetime.strftime(
-        datetime.datetime.strptime(
-            date_str[:len(EXAMPLE_PROPER_DATE)], PROPER_DATE_FORMAT),
-        PROPER_DATE_FORMAT
-    )

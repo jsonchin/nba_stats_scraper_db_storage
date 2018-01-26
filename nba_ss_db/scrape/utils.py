@@ -63,14 +63,22 @@ def format_date(date_str):
     OCT 29, 2016
     YYYY-MM-DD[extra_chars]
 
+    >>> format_date('01%2F25%2F2018')
+    '2018-01-25'
     >>> format_date('OCT 29, 2016')
     '2016-10-29'
     >>> format_date('11/10/2017')
     '2017-11-10'
     >>> format_date('2016-10-29T000001')
     '2016-10-29'
-
     """
+    # 01%2F25%2F2018
+    try:
+        month, day, year = date_str.split('%2F')
+        return '{}-{}-{}'.format(year, month, day)
+    except ValueError:
+        pass
+
     # OCT 29, 2016
     try:
         return datetime.datetime.strftime(
