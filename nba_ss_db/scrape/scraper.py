@@ -17,6 +17,7 @@ import time
 import pprint
 from ..scrape.utils import *
 import query_param_values
+from .fillable_api_request import FillableAPIRequest
 
 from typing import Dict, List
 
@@ -134,150 +135,6 @@ class NBAResponse():
         return '{} rows with headers: {}'.format(len(self.rows), self.headers)
 
 
-class FillableAPIRequest():
-    """
-    Represents a fillable api request.
-    """
-    SEASON_KEYWORD = '&Season='
-    SEASON_LENGTH = len('2017-18')
-
-
-    class APIRequest():
-
-        DATE_FROM_KEY = 'DateFrom'
-
-        def __init__(self, api_request: str, fillable_mapping: dict):
-            """
-            Nulls out the DateFrom query parameter.
-            """
-            self.fillable_mapping = fillable_mapping
-
-            self.url_parse_components = list(urllib.parse.urlparse(api_request))
-            unordered_query_params = urllib.parse.parse_qs(self.url_parse_components[4], keep_blank_values=True)
-            self.query_params = OrderedDict(sorted(unordered_query_params.items(), key=lambda x: x[0]))
-
-        def get_season(self):
-            return self.get_query_param('Season')
-
-        def get_query_param(self, param_key):
-            # stats.nba query params are of title format
-            param_key = format_nba_query_param(param_key)
-
-            if param_key in self.query_params:
-                if type(self.query_params[param_key]) == list and len(self.query_params[param_key]) == 1:
-                    return self.query_params[param_key][0]
-                else:
-                    return self.query_params[param_key]
-            else:
-                return None
-
-        def get_api_request_str(self, date_from=''):
-            self.query_params[FillableAPIRequest.APIRequest.DATE_FROM_KEY] = [date_from]
-            query_params_str = urllib.parse.urlencode(self.query_params, doseq=True)
-            self.url_parse_components[4] = query_params_str
-            return urllib.parse.urlunparse(self.url_parse_components)
-
-        def __str__(self):
-            return 'API Request: {}\n with fillable values: {}'.format(
-                self.get_api_request_str(), self.fillable_mapping)
-
-
-    def __init__(self, fillable_api_request: str, primary_keys: List[str]):
-        """
-        Given a fillable_api_request, parses the fillable choices
-        and adds any primary keys if necesssary.
-        """
-        self.fillable_api_request = fillable_api_request
-
-        self._fillable_choices = []
-        self._fillable_names = []
-        self._parse_fillable_api_request(primary_keys)
-
-
-    def generate_api_requests(self):
-        """
-        Yields APIRequest objects that are generated
-        by creating every combination of fillable choices.
-        """
-        for fillable_permutation in itertools.product(*self._fillable_choices):
-            fill_mapping = OrderedDict()
-            for fillable_type, fillable_value in zip(self._fillable_names, flatten_list(fillable_permutation)):
-                fill_mapping[fillable_type] = fillable_value
-            yield FillableAPIRequest.APIRequest(self.fill_in(**fill_mapping), fill_mapping)
-
-
-    def fill_in(self, **kwargs):
-        return self.fillable_api_request.format(**kwargs)
-
-
-    def __str__(self):
-        return 'Fillable API Request: {}\n\t with fillables: {}'.format(self.fillable_api_request, self._fillable_names)
-
-
-    def _parse_fillable_api_request(self, primary_keys: List[str]):
-        """
-        Parses a fillable api request string by looking for
-        specific keywords in the string such as '{SEASON}'
-        which denotes that the job should scrape for all
-        seasons.
-        """
-        if '{SEASON}' in self.fillable_api_request:
-            self._fillable_names.append('SEASON')
-
-            for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
-                if dependent_fillable in self.fillable_api_request:
-                    self._fillable_names.append(dependent_fillable[1:-1])
-
-            grouped_choices = []
-            for season in query_param_values.get_query_param_values('{SEASON}'):
-                fillable_values = []
-
-                for dependent_fillable in SEASON_DEPENDENT_FILLABLES:
-                    if dependent_fillable in self.fillable_api_request:
-                        fillable_values.append(query_param_values.get_query_param_values(dependent_fillable)[season])
-
-                for grouped_choice in itertools.product(*fillable_values):
-                    grouped_choice = [season] + list(grouped_choice)
-                    grouped_choices.append(grouped_choice)
-
-            self._fillable_choices.append(grouped_choices)
-
-        elif '{PLAYER_ID}' in self.fillable_api_request:
-            player_ids_by_season = query_param_values.get_query_param_values('{PLAYER_ID}')
-            self._fillable_names.append('PLAYER_ID')
-
-            # find what the season is in the api request
-            try:
-                i = self.fillable_api_request.index(FillableAPIRequest.SEASON_KEYWORD)
-                season_start_i = i + len(FillableAPIRequest.SEASON_KEYWORD)
-                season = self.fillable_api_request[season_start_i: season_start_i + FillableAPIRequest.SEASON_LENGTH]
-                self._fillable_choices.append(player_ids_by_season[season])
-            except ValueError:
-                raise ValueError('API request had {PLAYER_ID} without a specified season or {SEASON}.')
-
-        for fillable_type in OTHER_FILLABLES:
-            if fillable_type in self.fillable_api_request:
-                self._fillable_names.append(fillable_type[1:-1])
-                self._fillable_choices.append(query_param_values.get_query_param_values(fillable_type))
-
-
-def minimize_api_scrape(api_request: FillableAPIRequest.APIRequest):
-    """
-    Adds or updates the "DateFrom" api query parameter
-    based on the last time this api_request was made.
-    """
-    api_request_without_datefrom = api_request.get_api_request_str()
-
-    if db.request_logger.already_scraped(api_request_without_datefrom):
-        date_str = db.request_logger.get_last_scraped(api_request_without_datefrom)
-        date_str = date_str[:len(EXAMPLE_PROPER_DATE)]
-        date_from = (datetime.datetime.strptime(date_str, PROPER_DATE_FORMAT) - datetime.timedelta(days=2))\
-            .strftime(PROPER_DATE_FORMAT)
-        return api_request.get_api_request_str(date_from)
-    else:
-        return api_request.get_api_request_str()
-
-
 def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys: List[str], resultSetIndex, ignore_keys=set(), overwrite=False):
     """
     Scrapes for all combinations denoted by a "fillable" api_request.
@@ -298,29 +155,31 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
     """
 
     print(data_name)
-    fillable_api_request = FillableAPIRequest(fillable_api_request_str, primary_keys)
+    fillable_api_request = FillableAPIRequest(fillable_api_request_str)
     if CONFIG['VERBOSE']:
         print(fillable_api_request)
 
     for api_request in fillable_api_request.generate_api_requests():
 
-        if overwrite or not db.request_logger.already_scraped(api_request.get_api_request_str()):
-            api_request_str = api_request.get_api_request_str()
-        else:
+        if not (overwrite or not db.request_logger.already_scraped(api_request.api_request)):
             if CONFIG['VERBOSE']:
                 print('Skipping api_request: {}\n because it has already been scraped.'.format(api_request))
             continue
 
         print(api_request)
 
+        api_request_str = api_request.api_request
         nba_response = scrape(api_request_str, resultSetIndex)
 
+        # format the nba_response before storing it
         for key in primary_keys:
             key = format_str_to_nba_response_header(key)
 
+            # add any primary keys not provided in the response
             if key not in nba_response.headers:
-                col_val = api_request.get_query_param(key)
+                col_val = api_request.query_params[key]
 
+                # format dates
                 if key in DATE_QUERY_PARAMS and not is_proper_date_format(col_val):
                     col_val = format_date(col_val)
 
@@ -329,10 +188,11 @@ def general_scraper(fillable_api_request_str: str, data_name: str, primary_keys:
                 else:
                     raise ValueError('Unexpected primary key: {}'.format(key))
 
+        # store the response into the db
         db.store.store_nba_response(data_name, nba_response, primary_keys, ignore_keys)
 
         # log after it has been stored
-        db.request_logger.log_request(api_request.get_api_request_str(), data_name)
+        db.request_logger.log_request(api_request_str, data_name)
 
 
 def scrape(api_request, resultSetIndex):
