@@ -169,6 +169,6 @@ def add_rows_to_table(table_name: str, headers: List[str], rows: List[List]):
     if CONFIG['IGNORE_DUPLICATES']:
         sql_statement = """INSERT OR IGNORE INTO {} VALUES {};"""
     else:
-        sql_statement = """INSERT INTO {} VALUES {};"""
+        sql_statement = """INSERT OR REPLACE INTO {} VALUES {};"""
 
     db.utils.execute_many_sql(sql_statement.format(table_name, insert_values_sql_str), rows)
