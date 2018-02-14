@@ -15,6 +15,7 @@ from .. import db, CONFIG
 from .fillable_api_request import FillableAPIRequest
 from .utils import format_str_to_nba_response_header
 
+TIMEOUT_TIME = 10
 
 def run_scrape_jobs(path_to_api_requests: str, is_daily=False):
     """
@@ -153,7 +154,7 @@ def scrape(api_request, result_set_index):
         """
         USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36'
         response = requests.get(url=api_request, headers={'User-agent':USER_AGENT},
-                                stream=True, allow_redirects=False)
+                                stream=True, allow_redirects=False, timeout=TIMEOUT_TIME)
         return response.json()
 
     try_count = CONFIG['TRY_COUNT']
